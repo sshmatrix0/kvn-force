@@ -1,0 +1,185 @@
+{
+  "log": {
+    "level": "warn"
+  },
+  "dns": {
+    "servers": [
+      {
+        "tag": "dns-remote",
+        "type": "https",
+        "server": "1.1.1.1",
+        "path": "/dns-query",
+        "detour": "proxy"
+      },
+      {
+        "tag": "dns-direct",
+        "type": "udp",
+        "server": "8.8.8.8"
+      }
+    ]
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "interface_name": "singtun0",
+      "address": [
+        "172.19.0.1/30"
+      ],
+      "auto_route": true,
+      "strict_route": true,
+      "sniff": true
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "socks",
+      "tag": "proxy",
+      "server": "127.0.0.1",
+      "server_port": 10808
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "block",
+      "tag": "block"
+    }
+  ],
+  "route": {
+    "auto_detect_interface": true,
+    "default_domain_resolver": {
+      "server": "dns-remote"
+    },
+    "rules": [
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
+      {
+        "port": [
+          53
+        ],
+        "process_name": [
+          "v2ray.exe",
+          "xray.exe",
+          "mihomo-windows-amd64-v1.exe",
+          "mihomo-windows-amd64-compatible.exe",
+          "mihomo-windows-amd64.exe",
+          "mihomo-windows-arm64.exe",
+          "clash.exe",
+          "mihomo.exe",
+          "hysteria.exe",
+          "naive.exe",
+          "naiveproxy.exe",
+          "tuic-client.exe",
+          "tuic.exe",
+          "juicity-client.exe",
+          "juicity.exe",
+          "hysteria-windows-amd64.exe",
+          "hysteria-linux-amd64.exe",
+          "brook_windows_amd64.exe",
+          "brook_linux_amd64.exe",
+          "brook.exe",
+          "overtls-bin.exe",
+          "overtls.exe",
+          "shadowquic.exe",
+          "mieru.exe"
+        ],
+        "action": "hijack-dns"
+      },
+      {
+        "outbound": "direct",
+        "process_name": [
+          "v2ray.exe",
+          "xray.exe",
+          "mihomo-windows-amd64-v1.exe",
+          "mihomo-windows-amd64-compatible.exe",
+          "mihomo-windows-amd64.exe",
+          "mihomo-windows-arm64.exe",
+          "clash.exe",
+          "mihomo.exe",
+          "hysteria.exe",
+          "naive.exe",
+          "naiveproxy.exe",
+          "tuic-client.exe",
+          "tuic.exe",
+          "sing-box-client.exe",
+          "sing-box.exe",
+          "juicity-client.exe",
+          "juicity.exe",
+          "hysteria-windows-amd64.exe",
+          "hysteria-linux-amd64.exe",
+          "brook_windows_amd64.exe",
+          "brook_linux_amd64.exe",
+          "brook.exe",
+          "overtls-bin.exe",
+          "overtls.exe",
+          "shadowquic.exe",
+          "mieru.exe"
+        ]
+      },
+      {
+        "domain_suffix": [
+          ".ru"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "domain_suffix": [
+          "vk.com"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "domain_suffix": [
+          "vkuseraudio.net"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "domain_suffix": [
+          "vkuseraudio.com"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "domain_suffix": [
+          "userapi.com"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "domain_suffix": [
+          ".karelia.pro"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "outbound": "direct",
+        "ip_cidr": [
+          "127.0.0.0/8"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "process_name": [
+          "sing-box",
+          "sing-box-client",
+          "xray",
+          "v2ray"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "port": 10808
+      },
+      {
+        "outbound": "direct",
+        "ip_is_private": true
+      }
+    ],
+    "final": "proxy"
+  }
+}

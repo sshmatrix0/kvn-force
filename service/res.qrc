@@ -1,0 +1,8 @@
+<RCC>
+    <qresource>
+        <file>res/configs/config_xray.json</file>
+    </qresource>
+    <qresource>
+        <file>res/configs/config_singbox.json</file>
+    </qresource>
+</RCC>

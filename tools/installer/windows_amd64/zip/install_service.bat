@@ -1,0 +1,1 @@
+XRayClientLightService.exe install

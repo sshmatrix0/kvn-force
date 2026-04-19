@@ -1,0 +1,13 @@
+[Unit]
+Description=KVNForceService
+After=network.target
+After=systemd-user-sessions.service
+After=network-online.target
+
+[Service]
+User=root
+WorkingDirectory=%APP_DIR%/service
+ExecStart=%APP_DIR%/service/KVNForceService
+
+[Install]
+WantedBy=multi-user.target
