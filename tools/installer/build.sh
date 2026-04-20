@@ -1,10 +1,10 @@
 #!/bin/bash
 set -x
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-BUILD_DIR=$SCRIPT_DIR/../../../../build
+BUILD_DIR=$SCRIPT_DIR/../../build
 BUILD_DIR_LINUX=$BUILD_DIR/linux_amd64
 BUILD_DIR_QTIF=$BUILD_DIR_LINUX/qtif
-APP_DIR=$SCRIPT_DIR/../../../../app
+APP_DIR=$SCRIPT_DIR/../../app
 
 rm -rf $BUILD_DIR_QTIF || 0
 mkdir -p $BUILD_DIR_QTIF
@@ -22,7 +22,7 @@ mkdir -p $BUILD_DIR_QTIF/packages/org.sshmatrix/meta
 
 cp -R $BUILD_DIR/Release/. $BUILD_DIR_QTIF/packages/org.sshmatrix/data/
 cp -R $SCRIPT_DIR/meta/. $BUILD_DIR_QTIF/packages/org.sshmatrix/meta/
-cp -R $SCRIPT_DIR/KVNForce.service $BUILD_DIR_QTIF/packages/org.sshmatrix/data/
+cp -R $SCRIPT_DIR/service.linux/KVNForce.service $BUILD_DIR_QTIF/packages/org.sshmatrix/data/
 
 RELEASE_DATE=`git --git-dir ${APP_DIR}/../.git log -1 --pretty='%ad' --date=format:'%Y-%m-%d'`
 

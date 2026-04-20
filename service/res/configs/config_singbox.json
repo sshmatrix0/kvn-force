@@ -136,19 +136,19 @@
       },
       {
         "domain_suffix": [
-          "vkuseraudio.net"
+          ".vkuseraudio.net"
         ],
         "outbound": "direct"
       },
       {
         "domain_suffix": [
-          "vkuseraudio.com"
+          ".vkuseraudio.com"
         ],
         "outbound": "direct"
       },
       {
         "domain_suffix": [
-          "userapi.com"
+          ".userapi.com"
         ],
         "outbound": "direct"
       },

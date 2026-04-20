@@ -11,13 +11,13 @@ Component.prototype.installationFinishedPageIsShown = function () {
 };
 function installationFinishedPageIsShownWindows() {
     if (installer.isInstaller() && installer.status === QInstaller.Success) {
-        var appPath = installer.value("TargetDir") + "\\app\\KVNForce";
+        var appPath = installer.value("TargetDir") + "\\app\\KVNForce.exe";
         installer.executeDetached(appPath, "");
     }
 }
 function installationFinishedPageIsShownLinux() {
     if (installer.isInstaller() && installer.status === QInstaller.Success) {
-        var appPath = installer.value("TargetDir") + "/app/KVNForce.exe";
+        var appPath = installer.value("TargetDir") + "/app/KVNForce";
         installer.executeDetached(appPath, "");
     }
 }
@@ -74,9 +74,9 @@ function createOperationsLinux() {
         "Version=1.0\n" +
         "Type=Application\n" +
         "Name=KVNForce\n" +
-        "Comment=VPN Client Light\n" +
+        "Comment=VPN Client\n" +
         "Exec=" + installer.value("TargetDir") + "/app/KVNForce\n" +
-        "Icon=" + installer.value("TargetDir") + "/app_icon.png\n" +
+        "Icon=" + installer.value("TargetDir") + "/app/app_icon.png\n" +
         "Terminal=false\n" +
         "Categories=Network;Utility;\n";
 
