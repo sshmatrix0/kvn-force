@@ -24,8 +24,11 @@ Controller.prototype.onUninstallationStarted = function () {
 function onUninstallationStartedWindows() {
     installer.gainAdminRights();
     installer.performOperation("Execute", ["taskkill", "/im", "KVNForce.exe"]);
-    installer.performOperation("Execute", [installer.value("TargetDir") +"\\service\\KVNForceService.exe", "stop"]);
-    installer.performOperation("Execute", [installer.value("TargetDir") +"\\service\\KVNForceService.exe", "uninstall"]);
+    installer.performOperation("Execute", [installer.value("TargetDir") + "\\service\\KVNForceService.exe", "stop"]);
+    installer.performOperation("Execute", [installer.value("TargetDir") + "\\service\\KVNForceService.exe", "uninstall"]);
+
+    var registryPath = "HKEY_CURRENT_USER\\Software\\org.sshmatrix\\KVNForce";
+    installer.execute("reg", ["delete", registryPath, "/f"]);
 }
 function onUninstallationStartedLinux() {
     installer.gainAdminRights();
