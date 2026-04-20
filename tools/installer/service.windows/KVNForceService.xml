@@ -35,13 +35,13 @@
 <service>
   
   <!-- ID of the service. It should be unique across the Windows system-->
-  <id>XRayClientLightService</id>
+  <id>KVNForceService</id>
   <!-- Display name of the service -->
-  <name>XRayClientLight Service</name>
+  <name>KVNForce Service</name>
   <!-- Service description -->
-  <description>This service for XRayClientLight client</description>
+  <description>This service for KVNForce client</description>
   
   <!-- Path to the executable, which should be started -->
-  <executable>c:\Program Files\XRayClientLight\service\xray_client_light_service.exe</executable>
+  <executable>%APP_DIR%/service/KVNForceServiceOrigin.exe</executable>
   <logmode>rotate</logmode>
 </service>

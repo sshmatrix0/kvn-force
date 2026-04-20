@@ -3,18 +3,55 @@ function Component() {
 }
 
 Component.prototype.installationFinishedPageIsShown = function () {
-    if (installer.isInstaller() && installer.status === QInstaller.Success) {
-        var appPath = installer.value("TargetDir") + "/app/KVNForce";
-        installer.executeDetached(appPath, "");
+    if (systemInfo.productType === "windows") {
+        installationFinishedPageIsShownWindows();
+    } else {
+        installationFinishedPageIsShownLinux();
     }
 };
-
+function installationFinishedPageIsShownWindows() {
+    if (installer.isInstaller() && installer.status === QInstaller.Success) {
+        var appPath = installer.value("TargetDir") + "\\app\\KVNForce";
+        installer.executeDetached(appPath, "");
+    }
+}
+function installationFinishedPageIsShownLinux() {
+    if (installer.isInstaller() && installer.status === QInstaller.Success) {
+        var appPath = installer.value("TargetDir") + "/app/KVNForce.exe";
+        installer.executeDetached(appPath, "");
+    }
+}
 
 Component.prototype.createOperations = function () {
-
-
     component.createOperations();
 
+    if (systemInfo.productType === "windows") {
+        createOperationWindows();
+    } else {
+        createOperationsLinux();
+    }
+
+}
+function createOperationWindows() {
+    var sedCommand = "powershell -Command \"(Get-Content '" + installer.value("TargetDir") + "\\service\\KVNForceService.xml') -replace '" + "%APP_DIR%" + "', '" + installer.value("TargetDir") + "' | Set-Content '" + installer.value("TargetDir") + "\\service\\KVNForceService.xml'\"";
+    component.addElevatedOperation("Execute", "powershell", "-Command", sedCommand);
+
+    component.addElevatedOperation("Execute", installer.value("TargetDir") + "\\service\\KVNForceService.exe", "install");
+    component.addElevatedOperation("Execute", installer.value("TargetDir") + "\\service\\KVNForceService.exe", "start");
+    var target = "@TargetDir@\\app\\KVNForce.exe";
+    var shortcut = "@StartMenuDir@\\KVNForce.lnk";
+    component.addOperation(
+        "CreateShortcut",
+        target,
+        shortcut,
+        "workingDirectory=@TargetDir@\\app\\",
+        "iconPath=@TargetDir@\\app\\app_icon.ico",
+        "iconId=0",
+        "description=KVN Force"
+    );
+
+}
+function createOperationsLinux() {
     component.addElevatedOperation("Execute", "apt", "install", "-y", "libxcb-cursor0");
     var sedCommand = "sed -i 's|" + "%APP_DIR%" + "|" + installer.value("TargetDir") + "|' " + installer.value("TargetDir") + "/KVNForce.service";
     component.addElevatedOperation("Execute", "sh", "-c", sedCommand);

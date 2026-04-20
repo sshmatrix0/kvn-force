@@ -7,6 +7,6 @@
     <StartMenuDir>Network</StartMenuDir>
     <InstallerApplicationIcon>installer</InstallerApplicationIcon>
     <InstallerWindowIcon>app_icon.png</InstallerWindowIcon>
-    <TargetDir>/opt/KVNForce</TargetDir>
+    <TargetDir>%DIST_PATH%</TargetDir>
      <ControlScript>control.js</ControlScript>
 </Installer>

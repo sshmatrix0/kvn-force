@@ -15,6 +15,8 @@ APP_VERSION=`cat $APP_DIR/CMakeLists.txt | grep project\(kvn_force | awk '{print
 
 sed -i 's/%VERSION%/'${APP_VERSION}'/' $BUILD_DIR_QTIF/config/config.xml
 
+sed -i 's/%DIST_PATH%/\/opt\/KVNForce/' $BUILD_DIR_QTIF/config/config.xml
+
 mkdir -p $BUILD_DIR_QTIF/packages/org.sshmatrix/data
 mkdir -p $BUILD_DIR_QTIF/packages/org.sshmatrix/meta
 
