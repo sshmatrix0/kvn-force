@@ -4,7 +4,7 @@
 
 #include "settings.h"
 
-Settings::Settings(QObject *parent) : QObject(parent), qSettings("org", "X2RayClientLight") {
+Settings::Settings(QObject *parent) : QObject(parent), qSettings("org.sshmatrix", "KVNForce") {
 }
 
 void Settings::set(const QString &key, const QVariant &value) {
