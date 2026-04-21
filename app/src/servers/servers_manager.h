@@ -1,7 +1,7 @@
 #pragma once
 #include <QAbstractListModel>
 
-#include "server_info.h"
+#include "server_info/server_info.h"
 #include "settings/settings.h"
 //
 // Created by ksp on 23.03.2026.

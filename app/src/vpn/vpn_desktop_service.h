@@ -3,9 +3,11 @@
 //
 #pragma once
 #include <QLocalSocket>
-#include "abstract_vpn.h"
 #include "message_type.h"
 #include <QTimer>
+#include "server_info/server_info.h"
+#include "vpn/abstract_vpn.h"
+
 class VPNDesktopService : public AbstractVPN {
     Q_OBJECT
 

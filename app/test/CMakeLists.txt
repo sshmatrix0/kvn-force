@@ -24,7 +24,9 @@ target_link_libraries(q_string_test
         Qt::Quick
         Qt::Network
         Qt::Test
-        cpptrace::cpptrace)
+        cpptrace::cpptrace
+        common_lib
+)
 
 add_executable(server_test server_test.cpp ${SRC})
 target_link_libraries(server_test
@@ -34,7 +36,9 @@ target_link_libraries(server_test
         Qt::Quick
         Qt::Network
         Qt::Test
-        cpptrace::cpptrace)
+        cpptrace::cpptrace
+        common_lib
+)
 
 
 add_test(NAME MyClassTest COMMAND q_string_test)

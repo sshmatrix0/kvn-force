@@ -3,10 +3,10 @@
 //
 #pragma once
 
-#include "abstract_vpn.h"
 #include "logger/logger.h"
 #include "utils/process_runner.h"
 #include "utils/http_client/http_client.h"
+#include "vpn/abstract_vpn.h"
 
 class VPNService : public AbstractVPN {
     Q_OBJECT

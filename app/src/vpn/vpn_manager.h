@@ -4,7 +4,6 @@
 #pragma once
 #include <QObject>
 
-#include "abstract_vpn.h"
 #include "vpn_factory.h"
 #include "logger/logger.h"
 #include "utils/enum_util.h"

@@ -4,9 +4,9 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QTest>
-#include <servers/server_info.h>
 
 #include "logger/logger.h"
+#include "server_info/server_info.h"
 
 class ServerTest : public QObject {
     Q_OBJECT

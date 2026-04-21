@@ -13,7 +13,7 @@
 #include "exceptions/delete_dir_exception.h"
 #include "exceptions/json_format_exception.h"
 #include "logger/logger.h"
-#include "servers/server_info.h"
+#include "server_info/server_info.h"
 #include "utils/qthread/base_thread.h"
 
 enum class ConnectionState {

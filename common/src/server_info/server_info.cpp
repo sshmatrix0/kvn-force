@@ -2,15 +2,17 @@
 // Created by ksp on 24.03.2026.
 //
 
+
 #include "server_info.h"
 
-#include "exceptions/json_format_exception.h"
-#include "exceptions/unsupported_protocol_exception.h"
 #include "logger/logger.h"
 #include <QUrlQuery>
 #include <QUuid>
 
 #include "exceptions/bad_url_format_exception.h"
+#include "exceptions/json_format_exception.h"
+#include "exceptions/unsupported_protocol_exception.h"
+
 
 ServerInfo ServerInfo::fromJson(const QJsonObject &serverJSON) {
     if (serverJSON.isEmpty()) {

@@ -4,7 +4,7 @@
 
 #pragma once
 #include  <QSharedPointer>
-#include "abstract_vpn.h"
+#include "vpn/abstract_vpn.h"
 class VPNFactory {
 public:
     static QSharedPointer<AbstractVPN> createVPN();

@@ -8,6 +8,7 @@ elseif(UNIX)
     set(CMAKE_TOOLCHAIN_FILE "/opt/vcpkg/scripts/buildsystems/vcpkg.cmake")
 endif()
 set(CMAKE_CXX_STANDARD 20)
+add_subdirectory(../common ${CMAKE_BINARY_DIR}/common)
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Network)
 find_package(cpptrace REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
@@ -17,28 +18,11 @@ qt_add_executable(KVNForceService
         src/main.cpp
         src/message_server/message_server.cpp
         src/message_server/message_server.h
-        src/logger/logger.cpp
-        src/logger/logger.h
         ${RESOURCES}
-        src/utils/qthread/base_thread.cpp
-        src/exceptions/abstract_exception.h
-        src/exceptions/copy_config_exception.h
-        src/exceptions/create_dir_exception.h
-        src/exceptions/delete_dir_exception.h
-        src/exceptions/json_format_exception.h
-        src/exceptions/process_failed_exception.h
-        src/exceptions/unsupported_protocol_exception.h
-        src/exceptions/wrong_args_exception.h
-        src/vpn/abstract_vpn.h
         src/servers/server_info.cpp
         src/servers/server_info.h
-        src/utils/process_runner.cpp
-        src/utils/process_runner.h
-        src/utils/enum_util.h
         src/vpn/vpn_service.cpp
         src/vpn/vpn_service.h
-        src/utils/http_client/http_client.cpp
-        src/utils/http_client/http_client.h
         src/vpn/vpn_service_manager.cpp
         src/vpn/vpn_service_manager.h
         src/message_server/message_type.h
@@ -62,13 +46,14 @@ add_custom_target(copy_assets
 )
 add_dependencies(KVNForceService copy_assets)
 include_directories("./src")
-
+include_directories("../common/src")
 target_link_libraries(KVNForceService
     PRIVATE
         Qt::Core
         Qt::Network
         cpptrace::cpptrace
         magic_enum::magic_enum
+        common_lib
 )
 
 install(TARGETS KVNForceService

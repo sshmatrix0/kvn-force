@@ -10,6 +10,7 @@ elseif(UNIX)
     set(CMAKE_PREFIX_PATH "/opt/vcpkg/installed/x64-linux;/home/ksp/Qt/6.9.0/gcc_64")
     set(CMAKE_TOOLCHAIN_FILE "/opt/vcpkg/scripts/buildsystems/vcpkg.cmake")
 endif()
+add_subdirectory(../common ${CMAKE_BINARY_DIR}/common)
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Quick Network Test)
 find_package(cpptrace REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
@@ -48,34 +49,10 @@ qt_add_executable(KVNForce
         src/settings/settings.h
         src/servers/servers_manager.cpp
         src/servers/servers_manager.h
-        src/servers/server_info.cpp
-        src/servers/server_info.h
-        src/logger/logger.h
-        src/logger/logger.cpp
-        src/exceptions/abstract_exception.h
-        src/exceptions/json_format_exception.h
-        src/utils/process_runner.cpp
-        src/utils/process_runner.h
-        src/vpn/abstract_vpn.h
-        src/vpn/vpn_linux.h
-        src/vpn/vpn_linux.cpp
         src/vpn/vpn_factory.cpp
         src/vpn/vpn_factory.h
         src/vpn/vpn_manager.h
         src/vpn/message_type.h
-        src/exceptions/create_dir_exception.h
-        src/exceptions/delete_dir_exception.h
-        src/exceptions/copy_config_exception.h
-        src/exceptions/process_failed_exception.h
-        src/utils/qthread/base_thread.h
-        src/utils/qthread/base_thread.cpp
-        src/utils/qthread/q_thread_exception.h
-        src/utils/enum_util.h
-        src/exceptions/wrong_args_exception.h
-        src/utils/http_client/http_client.cpp
-        src/utils/http_client/http_client.h
-        src/exceptions/unsupported_protocol_exception.h
-        src/exceptions/bad_url_format_exception.h
         src/vpn/vpn_desktop_service.cpp
         src/vpn/vpn_desktop_service.h
 )
@@ -86,6 +63,7 @@ configure_file(
 )
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated)
 include_directories("./src")
+include_directories("../common/src")
 
 qt_add_qml_module(KVNForce
         URI kvn_force
@@ -124,6 +102,7 @@ target_link_libraries(KVNForce
         Qt::Test
         cpptrace::cpptrace
         magic_enum::magic_enum
+        common_lib
 )
 
 
