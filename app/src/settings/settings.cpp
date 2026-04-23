@@ -4,7 +4,6 @@
 
 #include "settings.h"
 
-#include <bits/locale_facets_nonio.h>
 #include <magic_enum/magic_enum.hpp>
 
 Settings::Settings(QObject *parent) : QObject(parent), qSettings("org.sshmatrix", "KVNForce") {
