@@ -14,6 +14,9 @@ public:
     VPNService(QObject *parent = nullptr);
 
     void start(ServerInfo server) override;
+    void start(ServerInfo server, QString routeByDefault, QList<QString> domainsForProxy,
+                       QList<QString> domainsForDirect, QList<QString> processNamesForProxy,
+                       QList<QString> processNamesForDirect) override;
 
     void stop() override;
     void runMethod() override;
@@ -29,6 +32,11 @@ private:
     QSharedPointer<ProcessRunner> singBoxRunner;
     QSharedPointer<ProcessRunner> xrayRunner;
     QSharedPointer<ServerInfo> server;
+    QString routeByDefault = "proxy";
+    QList<QString> domainsForProxy;
+    QList<QString> domainsForDirect;
+    QList<QString> processNamesForProxy;
+    QList<QString> processNamesForDirect;
     QSharedPointer<HttpClient> httpClient;
 };
 

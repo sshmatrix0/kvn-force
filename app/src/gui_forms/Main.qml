@@ -42,9 +42,9 @@ ApplicationWindow {
         target: ServersManager
 
         function onWithoutServersChanged(value) {
-            if(!value){
+            if (!value) {
                 stack.replace(home);
-            }else{
+            } else {
                 stack.replace(add);
             }
         }
@@ -73,14 +73,35 @@ ApplicationWindow {
         }
     }
     Component {
+        id: routingList
+        RoutingSettings {
+            id: routingListId
+            onCancel: function () {
+                bottomPanel.setCurrentTab("home");
+            }
+            onSave: function () {
+                bottomPanel.setCurrentTab("home");
+            }
+        }
+    }
+    Component {
+        id: settings
+        SettingsForm {
+            id: settingsId
+            onDnsSettings: function () {
+                stack.replace(routingList);
+            }
+        }
+    }
+    Component {
         id: editSettings
         ServerSettings {
             id: editSettingsId
             onCancel: function () {
-                stack.replace(home);
+                bottomPanel.setCurrentTab("home");
             }
             onSave: function () {
-                stack.replace(home);
+                bottomPanel.setCurrentTab("home");
             }
         }
     }
@@ -92,6 +113,8 @@ ApplicationWindow {
                 stack.replace(add);
             } else if (name == "home") {
                 stack.replace(home)
+            } else if (name == "settings") {
+                stack.replace(settings)
             }
         }
     }

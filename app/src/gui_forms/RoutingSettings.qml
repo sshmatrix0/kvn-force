@@ -1,50 +1,77 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import ServersManager 1.0
-
+import Settings 1.0
 Rectangle {
     id: root
     color: Theme.bgPrimary
-    property var serverAsMap
     signal cancel
     signal save
+
+    function getRouteByDefaultIndex(){
+        var route = Settings.getRouteByDefault();
+        return routeByDefaultId.findIndex(route);
+    }
+    function getDomainsForProxy(){
+        var domains = Settings.getDomainsForProxy();
+        return domains;
+    }
+    function getDomainsForDirect(){
+        var domains = Settings.getDomainsForDirect();
+        return domains;
+    }
+    function getProcessNamesForProxy(){
+        var processes = Settings.getProcessNamesForProxy();
+        return processes;
+    }
+    function getProcessNamesForDirect(){
+        var processes = Settings.getProcessNamesForDirect();
+        return processes;
+    }
     ColumnLayout {
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.margins: Theme.edgeMargins
-        spacing: 5
+        spacing: Theme.columnSpacing
         Text {
-            text: serverAsMap.name + " settings"
+            text: "Routing"
             color: Theme.textPrimary
             font.pixelSize: Theme.textHeader2Size
             Layout.alignment: Qt.AlignCenter | Qt.AlignTop
             Layout.topMargin: 50
         }
+        ASelectField {
+            id: routeByDefaultId
+            Layout.topMargin: 20
+            label: "Route By Default"
+            model: ["proxy", "direct"]
+            currentIndex: getRouteByDefaultIndex()
+            Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+        }
         ATextField {
             Layout.topMargin: 20
-            id: serverName
-            label: "Name"
-            text: serverAsMap.name
+            id: domainProxy
+            label: "Domains For Proxy"
+            text: getDomainsForProxy()
             Layout.alignment: Qt.AlignCenter | Qt.AlignTop
         }
         ATextField {
-            id: serverIp
-            label: "Ip"
-            text: serverAsMap.ip
+            id: domainDirect
+            label: "Domains For Direct"
+            text: getDomainsForDirect()
             Layout.alignment: Qt.AlignCenter | Qt.AlignTop
         }
         ATextField {
-            id: serverPort
-            label: "Port"
-            text: serverAsMap.port
+            id: processProxy
+            label: "Process Name For Proxy"
+            text: getProcessNamesForProxy()
             Layout.alignment: Qt.AlignCenter | Qt.AlignTop
         }
         ATextField {
-            id: serverXHttpPath
-            label: "XHTTP Path"
-            text: serverAsMap.xHttpPath
+            id: processDirect
+            label: "Process Name For Direct"
+            text: getProcessNamesForDirect()
             Layout.alignment: Qt.AlignCenter | Qt.AlignTop
         }
         RowLayout {
@@ -55,14 +82,11 @@ Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 font.pixelSize: Theme.textSize
                 onClicked: {
-                    var modifiedServerAsMap = {
-                        id: root.serverAsMap.id,
-                        ip: serverIp.text,
-                        name: serverName.text,
-                        port: parseInt(serverPort.text,10),
-                        xHttpPath: serverXHttpPath.text
-                    }
-                    ServersManager.updateServer(root.serverAsMap.id, modifiedServerAsMap);
+                    Settings.setRouteByDefault(routeByDefaultId.currentValue);
+                    Settings.setDomainsForProxy(domainProxy.text);
+                    Settings.setDomainsForDirect(domainDirect.text);
+                    Settings.setProcessNamesForProxy(processProxy.text);
+                    Settings.setProcessNamesForDirect(processDirect.text);
                     root.save();
                 }
                 background: Rectangle {

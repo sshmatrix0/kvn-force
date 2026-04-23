@@ -6,15 +6,8 @@
     "servers": [
       {
         "tag": "dns-remote",
-        "type": "https",
-        "server": "1.1.1.1",
-        "path": "/dns-query",
+        "address": "https://1.1.1.1/dns-query",
         "detour": "proxy"
-      },
-      {
-        "tag": "dns-direct",
-        "type": "udp",
-        "server": "8.8.8.8"
       }
     ]
   },
@@ -121,42 +114,6 @@
           "shadowquic.exe",
           "mieru.exe"
         ]
-      },
-      {
-        "domain_suffix": [
-          ".ru"
-        ],
-        "outbound": "direct"
-      },
-      {
-        "domain_suffix": [
-          "vk.com"
-        ],
-        "outbound": "direct"
-      },
-      {
-        "domain_suffix": [
-          ".vkuseraudio.net"
-        ],
-        "outbound": "direct"
-      },
-      {
-        "domain_suffix": [
-          ".vkuseraudio.com"
-        ],
-        "outbound": "direct"
-      },
-      {
-        "domain_suffix": [
-          ".userapi.com"
-        ],
-        "outbound": "direct"
-      },
-      {
-        "domain_suffix": [
-          ".karelia.pro"
-        ],
-        "outbound": "direct"
       },
       {
         "outbound": "direct",

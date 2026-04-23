@@ -15,7 +15,10 @@ Rectangle {
     property string active: ServersManager.withoutServers ? "add" : "home"
 
     signal tabChanged(string name)
-
+    function setCurrentTab(name) {
+        taskbar.active = name;
+        tabChanged(name);
+    }
     Row {
         id: row
         anchors.centerIn: parent
@@ -24,7 +27,8 @@ Rectangle {
         Repeater {
             model: [
                 {name: "home", icon: "qrc:/res/home.svg", iconActive: "qrc:/res/home_active.svg"},
-                {name: "add", icon: "qrc:/res/add.svg", iconActive: "qrc:/res/add_active.svg"}
+                {name: "add", icon: "qrc:/res/add.svg", iconActive: "qrc:/res/add_active.svg"},
+                {name: "settings", icon: "qrc:/res/settings.svg", iconActive: "qrc:/res/settings_active.svg"}
             ]
 
             delegate: Rectangle {

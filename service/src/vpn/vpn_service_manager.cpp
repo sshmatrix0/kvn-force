@@ -9,7 +9,8 @@ VPNServiceManager::VPNServiceManager(QObject *parent) : QObject(parent) {
     messageServer = new MessageServer(this);
     vpnService = new VPNService(this);
     connect(messageServer, &MessageServer::newMessage, this, &VPNServiceManager::processNewMessage);
-    connect(messageServer, &MessageServer::clientDisconnected, this, &VPNServiceManager::processClientOfMessageServerDisconnected);
+    connect(messageServer, &MessageServer::clientDisconnected, this,
+            &VPNServiceManager::processClientOfMessageServerDisconnected);
     connect(vpnService, &AbstractVPN::connecting, this, &VPNServiceManager::processConnecting);
     connect(vpnService, &AbstractVPN::connected, this, &VPNServiceManager::processConnected);
     connect(vpnService, &AbstractVPN::disconnected, this, &VPNServiceManager::processDisconnected);
@@ -86,7 +87,40 @@ void VPNServiceManager::processStartMessage(QJsonObject json) {
         throw JsonFormatException("Missing server property");
     }
     auto server = ServerInfo::fromJson(serverValue.toObject());
-    vpnService->start(server);
+    QJsonValue routeByDefaultValue = json["routeByDefault"];
+    if (!json.contains("routeByDefault") || !routeByDefaultValue.isString() || routeByDefaultValue.isNull()) {
+        throw JsonFormatException("Missing routeByDefaultValue property");
+    }
+    auto routeByDefault = routeByDefaultValue.toString();
+
+    QJsonValue domainsForProxyValue = json["domainsForProxy"];
+    if (!json.contains("domainsForProxy") || !domainsForProxyValue.isArray() || domainsForProxyValue.isNull()) {
+        throw JsonFormatException("Missing domainsForProxy property");
+    }
+    auto domainsForProxy = domainsForProxyValue.toVariant().toStringList();
+
+    QJsonValue domainsForDirectValue = json["domainsForDirect"];
+    if (!json.contains("domainsForDirect") || !domainsForDirectValue.isArray() || domainsForDirectValue.isNull()) {
+        throw JsonFormatException("Missing domainsForDirect property");
+    }
+    auto domainsForDirect = domainsForDirectValue.toVariant().toStringList();
+
+    QJsonValue processNamesForProxyValue = json["processNamesForProxy"];
+    if (!json.contains("processNamesForProxy") || !processNamesForProxyValue.isArray() || processNamesForProxyValue.
+        isNull()) {
+        throw JsonFormatException("Missing processNamesForProxy property");
+    }
+    auto processNamesForProxy = processNamesForProxyValue.toVariant().toStringList();
+
+    QJsonValue processNamesForDirectValue = json["processNamesForDirect"];
+    if (!json.contains("processNamesForDirect") || !processNamesForDirectValue.isArray() || processNamesForDirectValue.
+        isNull()) {
+        throw JsonFormatException("Missing processNamesForDirect property");
+    }
+    auto processNamesForDirect = processNamesForDirectValue.toVariant().toStringList();
+
+    vpnService->start(server, routeByDefault, domainsForProxy, domainsForDirect, processNamesForProxy,
+                      processNamesForDirect);
 }
 
 void VPNServiceManager::processStopMessage() {

@@ -25,7 +25,7 @@ Item {
     Text {
         id: labelText
         text: parent.label
-        color: Theme.textPrimary
+        color: Theme.selectedTextColor
         font.pixelSize: 14
 
         x: 16
@@ -44,9 +44,10 @@ Item {
         anchors.margins: 16
         anchors.bottomMargin: 10
         selectByMouse: true
-        font.pixelSize: 16
+        font.pixelSize: Theme.textSize
         color: Theme.textPrimary
         selectionColor: Theme.selectionColor
         selectedTextColor: Theme.selectedTextColor
+        clip: true
     }
 }

@@ -27,12 +27,15 @@
         <file>res/settings.svg</file>
     </qresource>
     <qresource>
+        <file>res/settings_active.svg</file>
+    </qresource>
+    <qresource>
         <file>res/delete.svg</file>
     </qresource>
     <qresource>
-        <file>res/configs/config_xray.json</file>
+        <file>res/dns.svg</file>
     </qresource>
     <qresource>
-        <file>res/configs/config_singbox.json</file>
+        <file>res/alt_route.svg</file>
     </qresource>
 </RCC>

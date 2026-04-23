@@ -2,17 +2,17 @@
 #include "utils/http_client/http_client.h"
 
 VPNService::VPNService(QObject *parent) : AbstractVPN(parent, "VPNService") {
-    #ifdef Q_OS_WIN
-      singBoxBinPath = QDir::cleanPath(appBinPath + "/windows_amd64" + "/" + "sing-box.exe");
-      xrayBinPath = QDir::cleanPath(appBinPath + "/windows_amd64" + "/" + "xray.exe");
-    #elif defined(Q_OS_LINUX)
-      singBoxBinPath = QDir::cleanPath(appBinPath + "/linux_amd64" + "/" + "sing-box");
-      xrayBinPath = QDir::cleanPath(appBinPath + "/linux_amd64" + "/" + "xray");
-    #endif
+#ifdef Q_OS_WIN
+    singBoxBinPath = QDir::cleanPath(appBinPath + "/windows_amd64" + "/" + "sing-box.exe");
+    xrayBinPath = QDir::cleanPath(appBinPath + "/windows_amd64" + "/" + "xray.exe");
+#elif defined(Q_OS_LINUX)
+    singBoxBinPath = QDir::cleanPath(appBinPath + "/linux_amd64" + "/" + "sing-box");
+    xrayBinPath = QDir::cleanPath(appBinPath + "/linux_amd64" + "/" + "xray");
+#endif
     singBoxRunner =
             QSharedPointer<ProcessRunner>(
                 new ProcessRunner(singBoxBinPath
-                                  , QStringList() << "run" << "-c" << singBoxConfigPath));
+                                  , QStringList() << "run" << "-c" << singBoxConfigPath, true));
     xrayRunner = QSharedPointer<ProcessRunner>(
         new ProcessRunner(xrayBinPath, QStringList() << "run" << "-c" << xrayConfigPath));
     connect(xrayRunner.data(), &ProcessRunner::started, this, &VPNService::xrayStarted);
@@ -24,9 +24,20 @@ VPNService::VPNService(QObject *parent) : AbstractVPN(parent, "VPNService") {
 }
 
 void VPNService::start(ServerInfo server) {
+    start(server, routeByDefault, domainsForProxy, domainsForDirect, processNamesForProxy, processNamesForDirect);
+}
+
+void VPNService::start(ServerInfo server, QString routeByDefault, QList<QString> domainsForProxy,
+                       QList<QString> domainsForDirect, QList<QString> processNamesForProxy,
+                       QList<QString> processNamesForDirect) {
     connectionState = ConnectionState::CONNECTING;
     emit connecting();
     this->server = server.clone();
+    this->routeByDefault = routeByDefault;
+    this->domainsForProxy = domainsForProxy;
+    this->domainsForDirect = domainsForDirect;
+    this->processNamesForProxy = processNamesForProxy;
+    this->processNamesForDirect = processNamesForDirect;
     BaseQThread::start();
 }
 
@@ -39,7 +50,8 @@ void VPNService::stop() {
 }
 
 void VPNService::runMethod() {
-    AbstractVPN::start(*server.data());
+    AbstractVPN::start(*server.data(), routeByDefault, domainsForProxy, domainsForDirect, processNamesForProxy,
+                       processNamesForDirect);
 }
 
 void VPNService::xrayStarted() {

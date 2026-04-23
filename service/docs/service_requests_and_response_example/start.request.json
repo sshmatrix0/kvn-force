@@ -1,4 +1,17 @@
 {
   "type": "start",
-  "server": {}
+  "server": {},
+  "routeByDefault": "proxy",
+  "domainsForProxy": [
+    ""
+  ],
+  "domainsForDirect": [
+    ""
+  ],
+  "processNameForProxy": [
+    ""
+  ],
+  "processNameForDirect": [
+    ""
+  ]
 }

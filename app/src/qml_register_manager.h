@@ -17,6 +17,7 @@ public:
         qmlRegisterSingletonInstance("MyTray", 1, 0, "SystemTray", &systemTray);
         qmlRegisterSingletonInstance("ServersManager", 1, 0, "ServersManager", &serversManager);
         qmlRegisterSingletonInstance("VPNManager", 1, 0, "VPNManager", &vpnManager);
+        qmlRegisterSingletonInstance("Settings", 1, 0, "Settings", &settings);
         QObject::connect(&vpnManager, &VPNManager::connected, &systemTray, &SystemTray::onVPNConnected);
         QObject::connect(&vpnManager, &VPNManager::disconnected, &systemTray, &SystemTray::onVPNDisconnected);
         QObject::connect(&systemTray, &SystemTray::vpnConnect, &vpnManager, &VPNManager::start);
@@ -27,4 +28,5 @@ private:
     SystemTray systemTray;
     ServersManager serversManager;
     VPNManager vpnManager;
+    Settings settings;
 };

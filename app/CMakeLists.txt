@@ -72,8 +72,11 @@ qt_add_qml_module(KVNForce
         src/gui_forms/BottomPanel.qml
         src/gui_forms/Connect.qml
         src/gui_forms/Add.qml
+        src/gui_forms/SettingsForm.qml
         src/gui_forms/ServerSettings.qml
+        src/gui_forms/RoutingSettings.qml
         src/gui_forms/ATextField.qml
+        src/gui_forms/ASelectField.qml
         src/gui_forms/Theme.qml
         src/gui_forms/ServerPicker.qml
         src/gui_forms/DeleteDialog.qml

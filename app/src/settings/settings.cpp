@@ -4,6 +4,9 @@
 
 #include "settings.h"
 
+#include <bits/locale_facets_nonio.h>
+#include <magic_enum/magic_enum.hpp>
+
 Settings::Settings(QObject *parent) : QObject(parent), qSettings("org.sshmatrix", "KVNForce") {
 }
 
@@ -16,6 +19,72 @@ void Settings::set(const QString &key, const QVariant &value) {
 QVariant Settings::get(const QString &key) const {
     return qSettings.value(key, QVariant());
 }
+
+QString Settings::getRouteByDefault() const {
+    auto value = qSettings.value(getRouteByDefaultLabel(), QString());
+    if (value.isValid() && !value.toString().isEmpty()) {
+        return value.toString();
+    }
+    return "proxy";
+}
+
+QString Settings::getDomainsForProxy() const {
+    auto value = qSettings.value(getDomainsForProxyLabel(), QString());
+    if (value.isValid() && !value.toString().isEmpty()) {
+        return value.toString();
+    }
+    return "";
+}
+
+QString Settings::getDomainsForDirect() const {
+    auto value = qSettings.value(getDomainsForDirectLabel(), QString());
+    if (value.isValid() && !value.toString().isEmpty()) {
+        return value.toString();
+    }
+    return ".ru;.рф;.vkuseraudio.net;.vkuseraudio.com;.userapi.com;.su;.yandex.net;.yandex.com";
+}
+
+QString Settings::getProcessNamesForProxy() const {
+    auto value = qSettings.value(getProcessNamesForProxyLabel(), QString());
+    if (value.isValid() && !value.toString().isEmpty()) {
+        return value.toString();
+    }
+    return "";
+}
+
+QString Settings::getProcessNamesForDirect() const {
+    auto value = qSettings.value(getProcessNamesForDirectLabel(), QString());
+    if (value.isValid() && !value.toString().isEmpty()) {
+        return value.toString();
+    }
+    return "";
+}
+
+void Settings::setRouteByDefault(QString value)  {
+    qSettings.setValue(getRouteByDefaultLabel(), value);
+    qSettings.sync();
+}
+
+void Settings::setDomainsForProxy(QString value) {
+    qSettings.setValue(getDomainsForProxyLabel(), value);
+    qSettings.sync();
+}
+
+void Settings::setDomainsForDirect(QString value) {
+    qSettings.setValue(getDomainsForDirectLabel(), value);
+    qSettings.sync();
+}
+
+void Settings::setProcessNamesForProxy(QString value) {
+    qSettings.setValue(getProcessNamesForProxyLabel(), value);
+    qSettings.sync();
+}
+
+void Settings::setProcessNamesForDirect(QString value) {
+    qSettings.setValue(getProcessNamesForDirectLabel(), value);
+    qSettings.sync();
+}
+
 
 QStringList Settings::getAllSettingsKeys() const {
     return qSettings.allKeys();
@@ -30,3 +99,22 @@ bool Settings::remove(const QString &key) {
     return false;
 }
 
+QString Settings::getRouteByDefaultLabel() const {
+    return "routeByDefault";
+}
+
+QString Settings::getDomainsForProxyLabel() const {
+    return "domainsForProxy";
+}
+
+QString Settings::getDomainsForDirectLabel() const {
+    return "domainsForDirect";
+}
+
+QString Settings::getProcessNamesForProxyLabel() const {
+    return "processNamesForProxy";
+}
+
+QString Settings::getProcessNamesForDirectLabel() const {
+    return "processNamesForDirect";
+}

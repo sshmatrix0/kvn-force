@@ -40,7 +40,14 @@ protected:
 
 public:
     virtual void start(ServerInfo server) {
-        genConfigs(server);
+        genConfigs(server, "proxy", QList<QString>(), QList<QString>(), QList<QString>(), QList<QString>());
+    };
+
+    virtual void start(ServerInfo server, QString routeByDefault, QList<QString> domainsForProxy,
+                       QList<QString> domainsForDirect, QList<QString> processNamesForProxy,
+                       QList<QString> processNamesForDirect) {
+        genConfigs(server, routeByDefault, domainsForProxy, domainsForDirect, processNamesForProxy,
+                   processNamesForDirect);
     };
 
     virtual void stop() = 0;
@@ -74,11 +81,15 @@ protected:
     QMutex mutex;
     ConnectionState connectionState = ConnectionState::DISCONNECTED;
     QString URL_FOR_CHECK = "https://google.com";
-    void genConfigs(ServerInfo server) {
+
+    void genConfigs(ServerInfo server, QString routeByDefault, QList<QString> domainsForProxy,
+                    QList<QString> domainsForDirect, QList<QString> processNamesForProxy,
+                    QList<QString> processNamesForDirect) {
         Logger.trace("Try to recreate app configs dir...");
         auto configPath = reCreateConfigsDir();
         Logger.debug("Recreated app configs dir: " + configPath.toStdString());
-        copySingBoxConfig(configPath);
+        copySingBoxConfig(configPath, routeByDefault, domainsForProxy, domainsForDirect, processNamesForProxy,
+                          processNamesForDirect);
         copyXRayConfig(server, configPath);
         emit configGenerated();
     }
@@ -96,16 +107,70 @@ protected:
         return configPath;
     }
 
-    void copySingBoxConfig(QString configPath) {
+    void copySingBoxConfig(QString configPath, QString routeByDefault, QList<QString> domainsForProxy,
+                           QList<QString> domainsForDirect, QList<QString> processNamesForProxy,
+                           QList<QString> processNamesForDirect) {
         Logger.trace("Copy sing-box config to path: " + configPath.toStdString());
-        QFile file(":/res/configs/config_singbox.json");
-        if (!file.exists()) {
-            throw CopyConfigException(
-                "Error copy sing-box config to " + configPath.toStdString() + ", tmp file not exists");
+        QFile singBoxConfigFile(":/res/configs/config_singbox.json");
+        singBoxConfigFile.open(QFile::ReadOnly);
+        auto qba = singBoxConfigFile.readAll();
+        QString jsonString = QString(qba);
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(jsonString.toUtf8(), &parseError);
+        if (parseError.error != QJsonParseError::NoError) {
+            throw JsonFormatException("Parse error: " + jsonString.toStdString());
         }
-        if (!file.copy(singBoxConfigPath)) {
-            throw CopyConfigException("Error copy sing-box config to " + configPath.toStdString());
+        auto configJson = doc.object();
+        if (configJson.isEmpty() || !configJson.contains("route") || !configJson["route"].isObject()) {
+            throw JsonFormatException("Missing outbounds config on not array");
         }
+        auto routeJson = configJson["route"].toObject();
+        if (!routeJson.contains("rules") || !routeJson["rules"].isArray()) {
+            throw JsonFormatException("Missing outbounds config on not array");
+        }
+        auto rules = routeJson["rules"].toArray();
+
+        if (!domainsForProxy.isEmpty()) {
+            QJsonObject domainsForProxyJson;
+            domainsForProxyJson["domain_suffix"] = convert2JsonArray(domainsForProxy);
+            domainsForProxyJson["outbound"] = "proxy";
+            rules.append(domainsForProxyJson);
+        }
+        if (!domainsForDirect.isEmpty()) {
+            QJsonObject domainsForDirectJson;
+            domainsForDirectJson["domain_suffix"] = convert2JsonArray(domainsForDirect);
+            domainsForDirectJson["outbound"] = "direct";
+            rules.append(domainsForDirectJson);
+        }
+        if (!processNamesForProxy.isEmpty()) {
+            QJsonObject processNamesForProxyJson;
+            processNamesForProxyJson["process_name"] = convert2JsonArray(processNamesForProxy);
+            processNamesForProxyJson["outbound"] = "proxy";
+            rules.append(processNamesForProxyJson);
+        }
+        if (!processNamesForDirect.isEmpty()) {
+            QJsonObject processNamesForDirectJson;
+            processNamesForDirectJson["process_name"] = convert2JsonArray(processNamesForDirect);
+            processNamesForDirectJson["outbound"] = "direct";
+            rules.append(processNamesForDirectJson);
+        }
+        routeJson["rules"] = rules;
+        routeJson["final"] = routeByDefault;
+        configJson["route"] = routeJson;
+        QFile destFile(singBoxConfigPath);
+        if (!destFile.open(QFile::WriteOnly)) {
+            throw CopyConfigException("Error open file: " + configPath.toStdString());
+        }
+        QJsonDocument destDoc(configJson);
+        destFile.write(destDoc.toJson());
+    }
+
+    QJsonArray convert2JsonArray(QList<QString> list) {
+        QJsonArray array;
+        for (QString item: list) {
+            array.append(QJsonValue(item));
+        }
+        return array;
     }
 
     void copyXRayConfig(ServerInfo server, QString configPath) {

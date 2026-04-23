@@ -25,6 +25,11 @@ void VPNDesktopService::start(ServerInfo server) {
     QJsonObject json;
     json["type"] = EnumUtil::toString(MessageType::START).toLower();
     json["server"] = serverJson;
+    json["routeByDefault"] = getRouteByDefault();
+    json["domainsForProxy"] = getDomainsForProxy();
+    json["domainsForDirect"] = getDomainsForDirect();
+    json["processNamesForProxy"] = getProcessNamesForProxy();
+    json["processNamesForDirect"] = getProcessNamesForDirect();
     QJsonDocument doc(json);
     socket->write(doc.toJson());
     socket->flush();
@@ -93,35 +98,34 @@ void VPNDesktopService::onMessageServerReadyRead() {
     }
 }
 
-void VPNDesktopService::processJsonRecieved(const QJsonObject &json)
-{
+void VPNDesktopService::processJsonRecieved(const QJsonObject &json) {
     try {
         auto type = getMessageType(json);
         switch (type) {
-        case MessageType::CONNECTING: {
-            Logger.debug("connecting");
-            connectionState = ConnectionState::CONNECTING;
-            emit connecting();
-            break;
-        }
-        case MessageType::CONNECTED: {
-            Logger.debug("connected");
-            connectionState = ConnectionState::CONNECTED;
-            emit connected();
-            break;
-        }
-        case MessageType::DISCONNECTED: {
-            Logger.debug("disconnected");
-            connectionState = ConnectionState::DISCONNECTED;
-            emit disconnected();
-            break;
-        }
-        case MessageType::FAILED: {
-            Logger.debug("failes");
-            connectionState = ConnectionState::FAILED;
-            emit failed();
-            break;
-        }
+            case MessageType::CONNECTING: {
+                Logger.debug("connecting");
+                connectionState = ConnectionState::CONNECTING;
+                emit connecting();
+                break;
+            }
+            case MessageType::CONNECTED: {
+                Logger.debug("connected");
+                connectionState = ConnectionState::CONNECTED;
+                emit connected();
+                break;
+            }
+            case MessageType::DISCONNECTED: {
+                Logger.debug("disconnected");
+                connectionState = ConnectionState::DISCONNECTED;
+                emit disconnected();
+                break;
+            }
+            case MessageType::FAILED: {
+                Logger.debug("failes");
+                connectionState = ConnectionState::FAILED;
+                emit failed();
+                break;
+            }
         }
     } catch (std::exception &ex) {
         Logger.error("Error", ex);
@@ -154,4 +158,36 @@ QJsonObject VPNDesktopService::parseJSON(const QString &message) {
 MessageType VPNDesktopService::getMessageType(const QJsonObject &json) {
     QString typeString = json["type"].toString().toUpper();
     return EnumUtil::fromString<MessageType>(typeString);
+}
+
+QString VPNDesktopService::getRouteByDefault() {
+    return settings.getRouteByDefault();
+}
+
+QJsonArray VPNDesktopService::getDomainsForProxy() {
+    return getSplittedSettings(settings.getDomainsForProxy());
+}
+
+QJsonArray VPNDesktopService::getDomainsForDirect() {
+    return getSplittedSettings(settings.getDomainsForDirect());
+}
+
+QJsonArray VPNDesktopService::getProcessNamesForProxy() {
+    return getSplittedSettings(settings.getProcessNamesForProxy());
+}
+
+QJsonArray VPNDesktopService::getProcessNamesForDirect() {
+    return getSplittedSettings(settings.getProcessNamesForDirect());
+}
+
+QJsonArray VPNDesktopService::getSplittedSettings(QString value) {
+    QJsonArray array;
+    auto qString = value;
+    auto splitted = qString.split(";");
+    for (auto domain: splitted) {
+        if (!domain.isEmpty()) {
+            array.append(domain);
+        }
+    }
+    return array;
 }
