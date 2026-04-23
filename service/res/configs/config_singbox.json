@@ -6,7 +6,9 @@
     "servers": [
       {
         "tag": "dns-remote",
-        "address": "https://1.1.1.1/dns-query",
+        "type": "https",
+        "server": "1.1.1.1",
+        "path": "/dns-query",
         "detour": "proxy"
       }
     ]
@@ -44,6 +46,26 @@
     "default_domain_resolver": {
       "server": "dns-remote"
     },
+    "rule_set": [
+      {
+        "tag": "youtube",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-youtube.srs"
+      },
+      {
+        "tag": "google-play",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-google-play.srs"
+      },
+      {
+        "tag": "discord",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-discord.srs"
+      }
+    ],
     "rules": [
       {
         "action": "sniff"
@@ -51,6 +73,10 @@
       {
         "protocol": "dns",
         "action": "hijack-dns"
+      },
+      {
+        "rule_set": ["youtube","google-play"],
+        "outbound": "proxy"
       },
       {
         "port": [
