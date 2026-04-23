@@ -24,7 +24,7 @@ QString Settings::getRouteByDefault() const {
     if (value.isValid() && !value.toString().isEmpty()) {
         return value.toString();
     }
-    return "proxy";
+    return "direct";
 }
 
 QString Settings::getDomainsForProxy() const {
@@ -48,7 +48,7 @@ QString Settings::getProcessNamesForProxy() const {
     if (value.isValid() && !value.toString().isEmpty()) {
         return value.toString();
     }
-    return "";
+    return "Telegram;Telegram.exe";
 }
 
 QString Settings::getProcessNamesForDirect() const {
