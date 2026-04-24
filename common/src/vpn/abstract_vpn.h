@@ -40,14 +40,14 @@ protected:
 
 public:
     virtual void start(ServerInfo server) {
-        genConfigs(server, "proxy", QList<QString>(), QList<QString>(), QList<QString>(), QList<QString>());
+        genConfigs(server, "proxy", QList<QString>(), QList<QString>(), QList<QString>(), QList<QString>(),QList<QString>());
     };
 
     virtual void start(ServerInfo server, QString routeByDefault, QList<QString> domainsForProxy,
                        QList<QString> domainsForDirect, QList<QString> processNamesForProxy,
-                       QList<QString> processNamesForDirect) {
+                       QList<QString> processNamesForDirect, QList<QString> ruleSetsForProxy) {
         genConfigs(server, routeByDefault, domainsForProxy, domainsForDirect, processNamesForProxy,
-                   processNamesForDirect);
+                   processNamesForDirect, ruleSetsForProxy);
     };
 
     virtual void stop() = 0;
@@ -84,12 +84,12 @@ protected:
 
     void genConfigs(ServerInfo server, QString routeByDefault, QList<QString> domainsForProxy,
                     QList<QString> domainsForDirect, QList<QString> processNamesForProxy,
-                    QList<QString> processNamesForDirect) {
+                    QList<QString> processNamesForDirect, QList<QString> ruleSetsForProxy) {
         Logger.trace("Try to recreate app configs dir...");
         auto configPath = reCreateConfigsDir();
         Logger.debug("Recreated app configs dir: " + configPath.toStdString());
         copySingBoxConfig(configPath, routeByDefault, domainsForProxy, domainsForDirect, processNamesForProxy,
-                          processNamesForDirect);
+                          processNamesForDirect, ruleSetsForProxy);
         copyXRayConfig(server, configPath);
         emit configGenerated();
     }
@@ -109,7 +109,7 @@ protected:
 
     void copySingBoxConfig(QString configPath, QString routeByDefault, QList<QString> domainsForProxy,
                            QList<QString> domainsForDirect, QList<QString> processNamesForProxy,
-                           QList<QString> processNamesForDirect) {
+                           QList<QString> processNamesForDirect, QList<QString> ruleSetsForProxy) {
         Logger.trace("Copy sing-box config to path: " + configPath.toStdString());
         QFile singBoxConfigFile(":/res/configs/config_singbox.json");
         singBoxConfigFile.open(QFile::ReadOnly);
@@ -129,6 +129,28 @@ protected:
             throw JsonFormatException("Missing outbounds config on not array");
         }
         auto rules = routeJson["rules"].toArray();
+        if (!ruleSetsForProxy.isEmpty()) {
+            QJsonArray ruleSets;
+            int index = 1;
+            QList<QString> tags;
+            for (auto &ruleUrl: ruleSetsForProxy) {
+                QJsonObject ruleJson;
+                tags.append("rule" + QString::number(index));
+                ruleJson["tag"] = "rule" + QString::number(index);
+                ruleJson["type"] = "remote";
+                ruleJson["format"] = "binary";
+                ruleJson["url"] = ruleUrl;
+                ruleJson["download_detour"] = "direct";
+                ruleJson["update_interval"] = "168h0m0s";
+                ruleSets.append(ruleJson);
+                index++;
+            }
+            routeJson["rule_set"] = ruleSets;
+            QJsonObject obj;
+            obj["rule_set"] = convert2JsonArray(tags);
+            obj["outbound"] = "proxy";
+            rules.append(obj);
+        }
 
         if (!domainsForProxy.isEmpty()) {
             QJsonObject domainsForProxyJson;

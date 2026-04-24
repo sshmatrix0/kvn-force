@@ -84,6 +84,26 @@ void Settings::setProcessNamesForDirect(QString value) {
     qSettings.sync();
 }
 
+QStringList Settings::getRuleSetsForProxy() const {
+    auto value = qSettings.value(getRuleSetsForProxyLabel(), QStringList());
+    if (value.isValid() && !value.toStringList().isEmpty()) {
+        return value.toStringList();
+    }
+    QStringList defaultList;
+    defaultList.append("https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-youtube.srs");
+    defaultList.append("https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-google-play.srs");
+    defaultList.append("https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-discord.srs");
+    defaultList.append("https://github.com/burjuyz/RuRulesets/raw/main/ruleset-domain-torrent_trackres.srs");
+    defaultList.append("https://github.com/burjuyz/RuRulesets/raw/main/ruleset-domain-antifilter_community.srs");
+    defaultList.append("https://github.com/burjuyz/RuRulesets/raw/main/ruleset-ip-antifilter_allyouneed.srs");
+    return defaultList;
+}
+
+void Settings::setRuleSetsForProxy(QStringList ruleSets) {
+    qSettings.setValue(getProcessNamesForDirectLabel(), ruleSets);
+    qSettings.sync();
+}
+
 
 QStringList Settings::getAllSettingsKeys() const {
     return qSettings.allKeys();
@@ -116,4 +136,8 @@ QString Settings::getProcessNamesForProxyLabel() const {
 
 QString Settings::getProcessNamesForDirectLabel() const {
     return "processNamesForDirect";
+}
+
+QString Settings::getRuleSetsForProxyLabel() const {
+    return "ruleSetsForProxy";
 }

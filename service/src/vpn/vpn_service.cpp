@@ -12,7 +12,7 @@ VPNService::VPNService(QObject *parent) : AbstractVPN(parent, "VPNService") {
     singBoxRunner =
             QSharedPointer<ProcessRunner>(
                 new ProcessRunner(singBoxBinPath
-                                  , QStringList() << "run" << "-c" << singBoxConfigPath));
+                                  , QStringList() << "run" << "-c" << singBoxConfigPath,true));
     xrayRunner = QSharedPointer<ProcessRunner>(
         new ProcessRunner(xrayBinPath, QStringList() << "run" << "-c" << xrayConfigPath));
     connect(xrayRunner.data(), &ProcessRunner::started, this, &VPNService::xrayStarted);
@@ -24,12 +24,13 @@ VPNService::VPNService(QObject *parent) : AbstractVPN(parent, "VPNService") {
 }
 
 void VPNService::start(ServerInfo server) {
-    start(server, routeByDefault, domainsForProxy, domainsForDirect, processNamesForProxy, processNamesForDirect);
+    start(server, routeByDefault, domainsForProxy, domainsForDirect, processNamesForProxy, processNamesForDirect,
+          ruleSetsForProxy);
 }
 
 void VPNService::start(ServerInfo server, QString routeByDefault, QList<QString> domainsForProxy,
                        QList<QString> domainsForDirect, QList<QString> processNamesForProxy,
-                       QList<QString> processNamesForDirect) {
+                       QList<QString> processNamesForDirect, QList<QString> ruleSetsForProxy) {
     connectionState = ConnectionState::CONNECTING;
     emit connecting();
     this->server = server.clone();
@@ -38,6 +39,7 @@ void VPNService::start(ServerInfo server, QString routeByDefault, QList<QString>
     this->domainsForDirect = domainsForDirect;
     this->processNamesForProxy = processNamesForProxy;
     this->processNamesForDirect = processNamesForDirect;
+    this->ruleSetsForProxy = ruleSetsForProxy;
     BaseQThread::start();
 }
 
@@ -51,7 +53,7 @@ void VPNService::stop() {
 
 void VPNService::runMethod() {
     AbstractVPN::start(*server.data(), routeByDefault, domainsForProxy, domainsForDirect, processNamesForProxy,
-                       processNamesForDirect);
+                       processNamesForDirect, ruleSetsForProxy);
 }
 
 void VPNService::xrayStarted() {

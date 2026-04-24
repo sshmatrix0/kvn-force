@@ -16,7 +16,7 @@ public:
     void start(ServerInfo server) override;
     void start(ServerInfo server, QString routeByDefault, QList<QString> domainsForProxy,
                        QList<QString> domainsForDirect, QList<QString> processNamesForProxy,
-                       QList<QString> processNamesForDirect) override;
+                       QList<QString> processNamesForDirect, QList<QString> ruleSetsForProxy) override;
 
     void stop() override;
     void runMethod() override;
@@ -37,6 +37,7 @@ private:
     QList<QString> domainsForDirect;
     QList<QString> processNamesForProxy;
     QList<QString> processNamesForDirect;
+    QList<QString> ruleSetsForProxy;
     QSharedPointer<HttpClient> httpClient;
 };
 

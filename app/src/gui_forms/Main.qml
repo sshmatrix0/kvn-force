@@ -77,10 +77,22 @@ ApplicationWindow {
         RoutingSettings {
             id: routingListId
             onCancel: function () {
-                bottomPanel.setCurrentTab("home");
+                bottomPanel.setCurrentTab("settings");
             }
             onSave: function () {
-                bottomPanel.setCurrentTab("home");
+                bottomPanel.setCurrentTab("settings");
+            }
+        }
+    }
+    Component {
+        id: routingRSList
+        RoutingSettingsRS {
+            id: routingRSListId
+            onCancel: function () {
+                bottomPanel.setCurrentTab("settings");
+            }
+            onSave: function () {
+                bottomPanel.setCurrentTab("settings");
             }
         }
     }
@@ -88,8 +100,11 @@ ApplicationWindow {
         id: settings
         SettingsForm {
             id: settingsId
-            onDnsSettings: function () {
+            onRoutingManualSettings: function () {
                 stack.replace(routingList);
+            }
+            onRoutingRuleSetsSettings: function () {
+                stack.replace(routingRSList);
             }
         }
     }

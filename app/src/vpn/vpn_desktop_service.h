@@ -40,6 +40,7 @@ private:
     QJsonArray getProcessNamesForProxy();
     QJsonArray getProcessNamesForDirect();
     QJsonArray getSplittedSettings(QString value);
+    QJsonArray getRuleSetsForProxy();
 
 private:
     QLocalSocket *socket;

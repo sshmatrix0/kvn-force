@@ -19,6 +19,9 @@ public:
     Q_INVOKABLE void setProcessNamesForProxy(QString value);
     Q_INVOKABLE void setProcessNamesForDirect(QString value);
 
+    Q_INVOKABLE QStringList getRuleSetsForProxy() const;
+    Q_INVOKABLE void setRuleSetsForProxy(QStringList ruleSets);
+
     Q_INVOKABLE QStringList getAllSettingsKeys() const;
     Q_INVOKABLE bool remove(const QString &key);
     QString getRouteByDefaultLabel() const;
@@ -26,6 +29,7 @@ public:
     QString getDomainsForDirectLabel() const;
     QString getProcessNamesForProxyLabel() const;
     QString getProcessNamesForDirectLabel() const;
+    QString getRuleSetsForProxyLabel() const;
 private:
     QSettings qSettings;
 };

@@ -4,7 +4,8 @@ import QtQuick.Layouts 1.15
 
 Rectangle {
     color: Theme.bgPrimary
-    signal dnsSettings
+    signal routingManualSettings
+    signal routingRuleSetsSettings
     ColumnLayout {
         anchors.fill: parent
         anchors.leftMargin: Theme.edgeMargins
@@ -23,9 +24,9 @@ Rectangle {
             Layout.fillHeight: true
 
             model: [
-                {name: "Routing", icon: "qrc:/res/alt_route.svg"},
-                {name: "TEST2", icon: "qrc:/res/add.svg", iconActive: "qrc:/res/add_active.svg"},
-                {name: "settings", icon: "qrc:/res/settings.svg", iconActive: "qrc:/res/settings_active.svg"}
+                {name: "Routing(Manual)", icon: "qrc:/res/alt_route.svg", callback:routingManualSettings},
+                {name: "Routing(Rule Sets For Proxy)", icon: "qrc:/res/alt_route.svg", callback:routingRuleSetsSettings},
+                {name: "settings", icon: "qrc:/res/settings.svg", callback:routingManualSettings}
             ]
 
             delegate: Rectangle {
@@ -36,7 +37,7 @@ Rectangle {
                     cursorShape: Qt.PointingHandCursor
                     anchors.fill:parent
                     onClicked: {
-                        dnsSettings();
+                        modelData.callback();
                     }
                 }
                 RowLayout {

@@ -30,6 +30,7 @@ void VPNDesktopService::start(ServerInfo server) {
     json["domainsForDirect"] = getDomainsForDirect();
     json["processNamesForProxy"] = getProcessNamesForProxy();
     json["processNamesForDirect"] = getProcessNamesForDirect();
+    json["ruleSetsForProxy"] = getRuleSetsForProxy();
     QJsonDocument doc(json);
     socket->write(doc.toJson());
     socket->flush();
@@ -188,6 +189,15 @@ QJsonArray VPNDesktopService::getSplittedSettings(QString value) {
         if (!domain.isEmpty()) {
             array.append(domain);
         }
+    }
+    return array;
+}
+
+QJsonArray VPNDesktopService::getRuleSetsForProxy() {
+    auto rureSets = settings.getRuleSetsForProxy();
+    QJsonArray array;
+    for (auto & ruleSet: rureSets) {
+        array.append(ruleSet);
     }
     return array;
 }

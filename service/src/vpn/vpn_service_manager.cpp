@@ -119,8 +119,15 @@ void VPNServiceManager::processStartMessage(QJsonObject json) {
     }
     auto processNamesForDirect = processNamesForDirectValue.toVariant().toStringList();
 
+    QJsonValue ruleSetsForProxyValue = json["ruleSetsForProxy"];
+    if (!json.contains("ruleSetsForProxy") || !ruleSetsForProxyValue.isArray() || ruleSetsForProxyValue.
+        isNull()) {
+        throw JsonFormatException("Missing ruleSetsForProxy property");
+        }
+    auto ruleSetsForProxy = ruleSetsForProxyValue.toVariant().toStringList();
+
     vpnService->start(server, routeByDefault, domainsForProxy, domainsForDirect, processNamesForProxy,
-                      processNamesForDirect);
+                      processNamesForDirect, ruleSetsForProxy);
 }
 
 void VPNServiceManager::processStopMessage() {
