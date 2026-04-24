@@ -34,6 +34,8 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOff
             Layout.topMargin: 20
             Column {                              // вместо ColumnLayout
                 width: parent.width
