@@ -6,6 +6,7 @@ Rectangle {
     color: Theme.bgPrimary
     signal routingManualSettings
     signal routingRuleSetsSettings
+    signal about
     ColumnLayout {
         anchors.fill: parent
         anchors.leftMargin: Theme.edgeMargins
@@ -26,7 +27,7 @@ Rectangle {
             model: [
                 {name: "Routing(Manual)", icon: "qrc:/res/alt_route.svg", callback:routingManualSettings},
                 {name: "Routing(Rule Sets For Proxy)", icon: "qrc:/res/alt_route.svg", callback:routingRuleSetsSettings},
-                {name: "settings", icon: "qrc:/res/settings.svg", callback:routingManualSettings}
+                {name: "About", icon: "qrc:/res/about.svg", callback:about}
             ]
 
             delegate: Rectangle {

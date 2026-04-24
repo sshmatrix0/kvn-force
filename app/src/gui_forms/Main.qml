@@ -97,6 +97,12 @@ ApplicationWindow {
         }
     }
     Component {
+        id: aboutIdC
+        About {
+            id: aboutId
+        }
+    }
+    Component {
         id: settings
         SettingsForm {
             id: settingsId
@@ -105,6 +111,9 @@ ApplicationWindow {
             }
             onRoutingRuleSetsSettings: function () {
                 stack.replace(routingRSList);
+            }
+            onAbout: function(){
+                stack.replace(aboutIdC);
             }
         }
     }

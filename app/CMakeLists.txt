@@ -82,6 +82,7 @@ qt_add_qml_module(KVNForce
         src/gui_forms/ServerPicker.qml
         src/gui_forms/DeleteDialog.qml
         src/gui_forms/Toast.qml
+        src/gui_forms/About.qml
         src/gui_forms/qmldir
 )
 

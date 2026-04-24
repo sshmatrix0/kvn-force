@@ -117,6 +117,14 @@ bool Settings::remove(const QString &key) {
     return false;
 }
 
+QString Settings::getAppVersion() {
+    return QString("%1").arg(APP_VERSION);
+}
+
+QString Settings::getGitHash() {
+    return QString("%1").arg(GIT_HASH);
+}
+
 QString Settings::getRouteByDefaultLabel() const {
     return "routeByDefault";
 }

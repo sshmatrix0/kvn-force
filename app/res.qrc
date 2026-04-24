@@ -38,4 +38,7 @@
     <qresource>
         <file>res/alt_route.svg</file>
     </qresource>
+    <qresource>
+        <file>res/about.svg</file>
+    </qresource>
 </RCC>

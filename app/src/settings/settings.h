@@ -1,6 +1,6 @@
 #pragma once
 #include <QSettings>
-
+#include "version.h"
 class Settings: public QObject {
     Q_OBJECT
 public:
@@ -24,6 +24,8 @@ public:
 
     Q_INVOKABLE QStringList getAllSettingsKeys() const;
     Q_INVOKABLE bool remove(const QString &key);
+    Q_INVOKABLE QString getAppVersion();
+    Q_INVOKABLE QString getGitHash();
     QString getRouteByDefaultLabel() const;
     QString getDomainsForProxyLabel() const;
     QString getDomainsForDirectLabel() const;
