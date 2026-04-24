@@ -32,7 +32,7 @@ QString Settings::getDomainsForProxy() const {
     if (value.isValid() && !value.toString().isEmpty()) {
         return value.toString();
     }
-    return "";
+    return "telegram.org";
 }
 
 QString Settings::getDomainsForDirect() const {
@@ -40,7 +40,7 @@ QString Settings::getDomainsForDirect() const {
     if (value.isValid() && !value.toString().isEmpty()) {
         return value.toString();
     }
-    return ".ru;.рф;.vkuseraudio.net;.vkuseraudio.com;.userapi.com;.su;.yandex.net;.yandex.com";
+    return ".ru;.рф;vkuseraudio.net;vkuseraudio.com;userapi.com;.su;yandex.net;yandex.com";
 }
 
 QString Settings::getProcessNamesForProxy() const {
@@ -48,7 +48,7 @@ QString Settings::getProcessNamesForProxy() const {
     if (value.isValid() && !value.toString().isEmpty()) {
         return value.toString();
     }
-    return "Telegram;Telegram.exe";
+    return "Telegram;Telegram.exe;Discord.exe;Discord";
 }
 
 QString Settings::getProcessNamesForDirect() const {
@@ -85,14 +85,13 @@ void Settings::setProcessNamesForDirect(QString value) {
 }
 
 QStringList Settings::getRuleSetsForProxy() const {
-    auto value = qSettings.value(getRuleSetsForProxyLabel(), QStringList());
-    if (value.isValid() && !value.toStringList().isEmpty()) {
+    auto value = qSettings.value(getRuleSetsForProxyLabel(), QVariant());
+    if (value.isValid() && !value.isNull()) {
         return value.toStringList();
     }
     QStringList defaultList;
     defaultList.append("https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-youtube.srs");
     defaultList.append("https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-google-play.srs");
-    defaultList.append("https://github.com/SagerNet/sing-geosite/raw/rule-set/geosite-discord.srs");
     defaultList.append("https://github.com/burjuyz/RuRulesets/raw/main/ruleset-domain-torrent_trackres.srs");
     defaultList.append("https://github.com/burjuyz/RuRulesets/raw/main/ruleset-domain-antifilter_community.srs");
     defaultList.append("https://github.com/burjuyz/RuRulesets/raw/main/ruleset-ip-antifilter_allyouneed.srs");
@@ -100,7 +99,7 @@ QStringList Settings::getRuleSetsForProxy() const {
 }
 
 void Settings::setRuleSetsForProxy(QStringList ruleSets) {
-    qSettings.setValue(getProcessNamesForDirectLabel(), ruleSets);
+    qSettings.setValue(getRuleSetsForProxyLabel(), ruleSets);
     qSettings.sync();
 }
 

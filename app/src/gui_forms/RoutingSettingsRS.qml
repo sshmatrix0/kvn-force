@@ -109,7 +109,38 @@ Rectangle {
                 Layout.topMargin: 10
                 font.pixelSize: Theme.textSize
                 onClicked: {
-                    // ... ваш код
+                    var ruleSets = [];
+                    if(ruleSet1.text){
+                        ruleSets.push(ruleSet1.text);
+                    }
+                    if(ruleSet2.text){
+                        ruleSets.push(ruleSet2.text);
+                    }
+                    if(ruleSet3.text){
+                        ruleSets.push(ruleSet3.text);
+                    }
+                    if(ruleSet4.text){
+                        ruleSets.push(ruleSet4.text);
+                    }
+                    if(ruleSet5.text){
+                        ruleSets.push(ruleSet5.text);
+                    }
+                    if(ruleSet6.text){
+                        ruleSets.push(ruleSet6.text);
+                    }
+                    if(ruleSet7.text){
+                        ruleSets.push(ruleSet7.text);
+                    }
+                    if(ruleSet8.text){
+                        ruleSets.push(ruleSet8.text);
+                    }
+                    if(ruleSet9.text){
+                        ruleSets.push(ruleSet9.text);
+                    }
+                    if(ruleSet10.text){
+                        ruleSets.push(ruleSet10.text);
+                    }
+                    Settings.setRuleSetsForProxy(ruleSets);
                     root.save();
                 }
                 background: Rectangle {
