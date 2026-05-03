@@ -15,18 +15,31 @@ public:
     void loadFromSettings();
 
     Q_INVOKABLE void setNewCurrentServer(QString serverId);
+
     Q_INVOKABLE void addNewServer(QString vlessUrl);
+
     Q_INVOKABLE QVariantMap getServerAsMapById(const QString &id);
+
     Q_INVOKABLE void updateServer(const QString &id, QVariantMap serverAsMap);
+
     Q_INVOKABLE void deleteServer(const QString &id);
+
     Q_PROPERTY(QString currentServerIp READ getCurrentServerIp NOTIFY currentServerIpChanged);
+    Q_PROPERTY(QString currentServerNetwork READ getCurrentServerNetwork NOTIFY currentServerNetworkChanged);
+    Q_PROPERTY(QString currentServerSecurity READ getCurrentServerSecurity NOTIFY currentServerSecurityChanged);
     Q_PROPERTY(QString currentServerId READ getCurrentServerId NOTIFY currentServerIdChanged);
     Q_PROPERTY(QString currentServerName READ getCurrentServerName NOTIFY currentServerNameChanged);
     Q_PROPERTY(bool withoutServers READ isEmpty NOTIFY withoutServersChanged);
 
     QString getCurrentServerIp();
+
     QString getCurrentServerId();
+
     QString getCurrentServerName();
+
+    QString getCurrentServerNetwork();
+
+    QString getCurrentServerSecurity();
 
 public:
     // QAbstractListModel методы
@@ -43,25 +56,41 @@ public:
         IdRole = Qt::UserRole + 1,
         IpRole,
         NameRole,
+        NetworkRole,
+        SecurityRole
     };
 
 signals:
     void sendResponseCurrentServer(ServerInfo server);
 
     void currentServerIpChanged(const QString &ip);
+
     void currentServerIdChanged(const QString &id);
+
     void currentServerNameChanged(const QString &name);
+
+    void currentServerNetworkChanged(const QString &name);
+
+    void currentServerSecurityChanged(const QString &name);
+
     void withoutServersChanged(bool withoutServers);
 
 public slots:
     void processRequestCurrentServer();
+
 private:
-    ServerInfo emptyServer = ServerInfo("empty","", 0, "empty",{},{});
+    ServerInfo emptyServer = ServerInfo("empty", "empty", {}, {});
+
     ServerInfo getServerById(const QString &id);
+
     int getServerIndexById(const QString &id);
+
     QString getDefaultServerNumber();
+
     void saveServers();
+
     void updateServer(ServerInfo &serverInfo);
+
 private:
     const QString serversKey = "servers";
     Settings settings;

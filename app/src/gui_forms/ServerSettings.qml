@@ -7,48 +7,130 @@ Rectangle {
     id: root
     color: Theme.bgPrimary
     property var serverAsMap
-    signal cancel
-    signal save
+        signal
+    cancel
+        signal
+    save
     ColumnLayout {
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.left: parent.left
+        anchors.fill: parent
         anchors.margins: Theme.edgeMargins
-        spacing: 5
+        spacing: Theme.columnSpacing
+
         Text {
             text: serverAsMap.name + " settings"
             color: Theme.textPrimary
             font.pixelSize: Theme.textHeader2Size
-            Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+            Layout.alignment: Qt.AlignCenter
             Layout.topMargin: 50
         }
-        ATextField {
+
+        ScrollView {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOff
             Layout.topMargin: 20
-            id: serverName
-            label: "Name"
-            text: serverAsMap.name
-            Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+            Column {                              // вместо ColumnLayout
+                width: parent.width
+                spacing: Theme.columnSpacing
+                ATextField {
+                    Layout.topMargin: 20
+                    id: serverName
+                    label: "Name"
+                    text: serverAsMap.name
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ATextField {
+                    id: serverIp
+                    label: "Ip"
+                    text: serverAsMap.ip
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ATextField {
+                    id: serverPort
+                    label: "Port"
+                    text: serverAsMap.port
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ASelectField {
+                    id: networkTypeId
+                    Layout.topMargin: 20
+                    label: "Network"
+                    model: ["xhttp", "grpc"]
+                    currentIndex: networkTypeId.findIndex(serverAsMap.network)
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ATextField {
+                    visible: networkTypeId.currentValue === "xhttp"
+                    id: xHttpPath
+                    label: "xHttpPath"
+                    text: serverAsMap.xHttpPath
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ATextField {
+                    visible: networkTypeId.currentValue === "grpc"
+                    id: grpcServiceName
+                    label: "Grpc Service Name"
+                    text: serverAsMap.grpcServiceName
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ASelectField {
+                    id: securityTypeId
+                    Layout.topMargin: 20
+                    label: "Security"
+                    model: ["tls", "reality"]
+                    currentIndex: securityTypeId.findIndex(serverAsMap.security)
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ATextField {
+                    visible: securityTypeId.currentValue === "tls"
+                    id: tlsFingerprint
+                    label: "Tls Fingerprint"
+                    text: serverAsMap.tlsFingerprint
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ATextField {
+                    visible: securityTypeId.currentValue === "reality"
+                    id: realityServerName
+                    label: "Reality Server Name"
+                    text: serverAsMap.realityServerName
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ATextField {
+                    visible: securityTypeId.currentValue === "reality"
+                    id: realityFingerprint
+                    label: "Reality FingerPrint"
+                    text: serverAsMap.realityFingerprint
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ATextField {
+                    visible: securityTypeId.currentValue === "reality"
+                    id: realityPublicKey
+                    label: "Reality Public Key"
+                    text: serverAsMap.realityPublicKey
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ATextField {
+                    visible: securityTypeId.currentValue === "reality"
+                    id: realityShortId
+                    label: "Reality Short Id"
+                    text: serverAsMap.realityShortId
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ATextField {
+                    visible: securityTypeId.currentValue === "reality"
+                    id: realitySpiderX
+                    label: "Reality SpiderX"
+                    text: serverAsMap.realitySpiderX
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+            }
         }
-        ATextField {
-            id: serverIp
-            label: "Ip"
-            text: serverAsMap.ip
-            Layout.alignment: Qt.AlignCenter | Qt.AlignTop
-        }
-        ATextField {
-            id: serverPort
-            label: "Port"
-            text: serverAsMap.port
-            Layout.alignment: Qt.AlignCenter | Qt.AlignTop
-        }
-        ATextField {
-            id: serverXHttpPath
-            label: "XHTTP Path"
-            text: serverAsMap.xHttpPath
-            Layout.alignment: Qt.AlignCenter | Qt.AlignTop
-        }
+
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
+            Layout.bottomMargin: 50
             RoundButton {
                 text: "Save"
                 Layout.topMargin: 10
@@ -59,8 +141,17 @@ Rectangle {
                         id: root.serverAsMap.id,
                         ip: serverIp.text,
                         name: serverName.text,
-                        port: parseInt(serverPort.text,10),
-                        xHttpPath: serverXHttpPath.text
+                        port: parseInt(serverPort.text, 10),
+                        network: networkTypeId.currentValue,
+                        security: securityTypeId.currentValue,
+                        xHttpPath: xHttpPath.text,
+                        grpcServiceName: grpcServiceName.text,
+                        tlsFingerprint: tlsFingerprint.text,
+                        realityServerName: realityServerName.text,
+                        realityFingerprint: realityFingerprint.text,
+                        realityPublicKey: realityPublicKey.text,
+                        realityShortId: realityShortId.text,
+                        realitySpiderX: realitySpiderX.text
                     }
                     ServersManager.updateServer(root.serverAsMap.id, modifiedServerAsMap);
                     root.save();

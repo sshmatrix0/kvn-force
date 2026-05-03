@@ -33,11 +33,33 @@ Rectangle {
             Layout.alignment: Qt.AlignCenter | Qt.AlignTop
             Layout.topMargin: 50
         }
-        Text {
-            text: ServersManager.currentServerIp
-            color: Theme.textPrimary
-            font.pixelSize: 10
+        RowLayout{
             Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+            Text {
+                text: ServersManager.currentServerIp
+                color: Theme.textPrimary
+                font.pixelSize: 10
+            }
+            Text {
+                text: "|"
+                color: Theme.textPrimary
+                font.pixelSize: 10
+            }
+            Text {
+                text: ServersManager.currentServerNetwork
+                color: Theme.textPrimary
+                font.pixelSize: 10
+            }
+            Text {
+                text: "|"
+                color: Theme.textPrimary
+                font.pixelSize: 10
+            }
+            Text {
+                text: ServersManager.currentServerSecurity
+                color: Theme.textPrimary
+                font.pixelSize: 10
+            }
         }
 
         Text {
@@ -78,6 +100,8 @@ Rectangle {
                         text: model.ip
                         property string serverId: model.id
                         property string serverName: model.name
+                        property string network: model.network
+                        property string security: model.security
                         ButtonGroup.group: buttonGroup
                         checked: model.id == ServersManager.currentServerId
                         // Кастомный текст
@@ -89,12 +113,37 @@ Rectangle {
                                 verticalAlignment: Text.AlignVCenter
                                 leftPadding: control.indicator.width + control.spacing
                             }
-                            Text {
-                                text: control.text
-                                color: control.checked ? Theme.active : Theme.textPrimary
-                                font.pixelSize: 10
-                                verticalAlignment: Text.AlignVCenter
-                                leftPadding: control.indicator.width + control.spacing
+                            RowLayout{
+                                Text {
+                                    text: control.text
+                                    color: control.checked ? Theme.active : Theme.textPrimary
+                                    font.pixelSize: 10
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                Text {
+                                    text: "|"
+                                    color: control.checked ? Theme.active : Theme.textPrimary
+                                    font.pixelSize: 10
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                Text {
+                                    text: control.network
+                                    color: control.checked ? Theme.active : Theme.textPrimary
+                                    font.pixelSize: 10
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                Text {
+                                    text: "|"
+                                    color: control.checked ? Theme.active : Theme.textPrimary
+                                    font.pixelSize: 10
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                Text {
+                                    text: control.security
+                                    color: control.checked ? Theme.active : Theme.textPrimary
+                                    font.pixelSize: 10
+                                    verticalAlignment: Text.AlignVCenter
+                                }
                             }
 
                         }

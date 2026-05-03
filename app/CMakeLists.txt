@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(kvn_force VERSION 0.2.1 LANGUAGES CXX)
+project(kvn_force VERSION 0.3.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(QT_QML_GENERATE_QMLLS_INI ON)

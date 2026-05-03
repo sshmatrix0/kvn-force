@@ -56,14 +56,20 @@ ServerInfo ServerInfo::fromJson(const QJsonObject &serverJSON) {
         name = serverJSON["name"].toString();
     }
     auto userInfo = getUserFromJson(vNextJson);
+    QSharedPointer<QList<VNext> > vnext = QSharedPointer<QList<VNext> >(new QList<VNext>());
+    QList<UserInfo> users;
+    users.append(userInfo);
+    vnext->append(VNext{.address = ip, .port = port, .users = users});
+    ServerSettings settings = {
+        .vnext = vnext
+    };
     bool active = true;
 
     if (serverJSON.contains("active")) {
         active = serverJSON["active"].toBool();
     }
-    auto serverInfo = ServerInfo(serverId, ip, port, name,
-                                 userInfo, streamSettings
-    );
+
+    auto serverInfo = ServerInfo(serverId, name, settings, streamSettings);
     serverInfo.setActive(active);
     return serverInfo;
 }
@@ -77,25 +83,116 @@ ServerInfo ServerInfo::fromVlessUrl(const QString &vlessUrl, const QString &defa
     if (url.host().isEmpty() || url.port() == 0 || vlessUrl.isEmpty()) {
         throw BadUrlFormatException("Bad server url: " + vlessUrl.toStdString());
     }
-    Logger.info(
-        "Server host: " + url.host().toStdString() + ", server port: " + std::to_string(url.port()) + " " + url.
+    Logger.debug(
+        "Server host: " + url.host().toStdString() + ", server port: " + std::to_string(url.port()) + ", " + url.
         userInfo().toStdString());
 
-    UserInfo userInfo = {.id = url.userInfo()};
-    QUrlQuery query(url);
-    StreamSettings streamSettings = {
-        .xhttpSettings = QSharedPointer<XhttpSettings>(new XhttpSettings{
-            .path = QUrl::fromPercentEncoding(query.queryItemValue("path").toUtf8())
-        })
-    };
     QString serverName = url.fragment();
     if (serverName.isEmpty()) {
         serverName = defaultServerNumber;
     }
     QUuid uuid = QUuid::createUuid();
-    ServerInfo serverInfo(uuid.toString(), url.host(), url.port(), serverName, userInfo, streamSettings);
+    auto settings = getSettingsFromVlessUrl(url);
+    auto streamSettings = getStreamSettingsFromVlessUrl(url);
+    ServerInfo serverInfo(uuid.toString(), serverName, settings, streamSettings);
     return serverInfo;
 }
+
+ServerSettings ServerInfo::getSettingsFromVlessUrl(const QUrl &url) {
+    QSharedPointer<QList<VNext> > vnext = QSharedPointer<QList<VNext> >(new QList<VNext>());
+    QList<UserInfo> users;
+    UserInfo userInfo = {.id = url.userInfo()};
+    users.append(userInfo);
+    vnext->append(VNext{.address = url.host(), .port = url.port(), .users = users});
+    ServerSettings settings = {
+        .vnext = vnext
+    };
+    return settings;
+}
+
+StreamSettings ServerInfo::getStreamSettingsFromVlessUrl(const QUrl &url) {
+    QUrlQuery query(url);
+    QString network = getStringParameterFromUrlQuery(query, "type");
+    QString security = getStringParameterFromUrlQuery(query, "security");
+    QSharedPointer<XhttpSettings> xhttpSettings;
+    QSharedPointer<GrpcSettings> grpcSettings;
+    if (network == "xhttp") {
+        xhttpSettings = getXhttpSettingsFromVlessUrl(query);
+    } else if (network == "grpc") {
+        grpcSettings = getGrpcSettingsFromVlessUrl(query);
+    } else {
+        throw BadUrlFormatException("Unsupported type: " + network.toStdString());
+    }
+
+    QSharedPointer<TlsSettings> tlsSettings;
+    QSharedPointer<RealitySettings> realitySettings;
+    if (security == "tls") {
+        tlsSettings = getTlsSettingsFromVlessUrl(query);
+    } else if (security == "reality") {
+        realitySettings = getRealitySettingsFromVlessUrl(query);
+    } else {
+        throw BadUrlFormatException("Unsupported secutity: " + security.toStdString());
+    }
+
+    StreamSettings streamSettings = {
+        .network = network,
+        .security = security,
+        .tlsSettings = tlsSettings,
+        .realitySettings = realitySettings,
+        .grpcSettings = grpcSettings,
+        .xhttpSettings = xhttpSettings
+    };
+    return streamSettings;
+}
+
+QSharedPointer<XhttpSettings> ServerInfo::getXhttpSettingsFromVlessUrl(const QUrlQuery &query) {
+    QSharedPointer<XhttpSettings> xhttpSettings;
+    QString path = getStringParameterFromUrlQuery(query, "path");
+    return QSharedPointer<XhttpSettings>(new XhttpSettings{
+        .path = path
+    });
+}
+
+QSharedPointer<GrpcSettings> ServerInfo::getGrpcSettingsFromVlessUrl(const QUrlQuery &query) {
+    QSharedPointer<GrpcSettings> grpcSettings;
+    QString serviceName = getStringParameterFromUrlQuery(query, "serviceName");
+    return QSharedPointer<GrpcSettings>(new GrpcSettings{.serviceName = serviceName});
+}
+
+QSharedPointer<TlsSettings> ServerInfo::getTlsSettingsFromVlessUrl(const QUrlQuery &query) {
+    QString fingerprint = getStringParameterFromUrlQuery(query, "fp");
+    if (fingerprint.isEmpty()) {
+        fingerprint = "chrome";
+    }
+    return QSharedPointer<TlsSettings>(new TlsSettings{.fingerprint = fingerprint});
+}
+
+QSharedPointer<RealitySettings> ServerInfo::getRealitySettingsFromVlessUrl(const QUrlQuery &query) {
+    QString serverName = getStringParameterFromUrlQuery(query, "sni");
+    QString fingerprint = getStringParameterFromUrlQuery(query, "fp");
+    if (fingerprint.isEmpty()) {
+        fingerprint = "chrome";
+    }
+    QString publicKey = getStringParameterFromUrlQuery(query, "pbk");
+    QString shortId = getStringParameterFromUrlQuery(query, "sid");
+    QString spiderX = getStringParameterFromUrlQuery(query, "spx");
+    if (spiderX.isEmpty()) {
+        spiderX = "/";
+    }
+
+    return QSharedPointer<RealitySettings>(new RealitySettings{
+        .serverName = serverName,
+        .fingerprint = fingerprint,
+        .publicKey = publicKey,
+        .shortId = shortId,
+        .spiderX = spiderX
+    });
+}
+
+QString ServerInfo::getStringParameterFromUrlQuery(const QUrlQuery &query, const QString &parameterName) {
+    return QUrl::fromPercentEncoding(query.queryItemValue(parameterName).toUtf8());
+}
+
 
 UserInfo ServerInfo::getUserFromJson(const QJsonObject &vNextJson) {
     if (!vNextJson.contains("users") && vNextJson["users"].isArray()) {
@@ -123,37 +220,112 @@ UserInfo ServerInfo::getUserFromJson(const QJsonObject &vNextJson) {
 
 StreamSettings ServerInfo::getStreamSettingsFromJson(const QJsonObject &streamSettingsJson) {
     if (!streamSettingsJson.contains("network")
-        || !streamSettingsJson.contains("security")
-        || !streamSettingsJson.contains("tlsSettings")) {
+        || !streamSettingsJson.contains("security")) {
         throw JsonFormatException("streamSettings bad format");
     }
-    QJsonObject tlsSettingsJson = streamSettingsJson["tlsSettings"].toObject();
-    if (!tlsSettingsJson.contains("fingerprint")) {
-        throw JsonFormatException("fingerprint undefined");
-    }
-
 
     QString ssNetwork = streamSettingsJson["network"].toString();
     QString ssSecurity = streamSettingsJson["security"].toString();
-    QString fingerprint = tlsSettingsJson["fingerprint"].toString();
+    QSharedPointer<XhttpSettings> xhttpSettings;
+    QSharedPointer<GrpcSettings> grpcSettings;
     if (ssNetwork == "xhttp") {
+        if (!streamSettingsJson.contains("xhttpSettings")) {
+            throw JsonFormatException("xhttpSettings undefined");
+        }
         QJsonObject xhttpSettingsJson = streamSettingsJson["xhttpSettings"].toObject();
-        if (!xhttpSettingsJson.contains("path")) {
-            throw JsonFormatException("path undefined");
+        xhttpSettings = getXhttpSettingsFromJson(xhttpSettingsJson);
+    } else if (ssNetwork == "grpc") {
+        if (!streamSettingsJson.contains("grpcSettings")) {
+            throw JsonFormatException("xhttpSettings undefined");
         }
-        if (!xhttpSettingsJson.contains("mode")) {
-            throw JsonFormatException("mode undefined");
-        }
-        QString path = xhttpSettingsJson["path"].toString();
-        QString mode = xhttpSettingsJson["mode"].toString();
-        return {
-            .network = ssNetwork, .security = ssSecurity,
-            .tlsSettings = TlsSettings{fingerprint},
-            .xhttpSettings = QSharedPointer<XhttpSettings>(new XhttpSettings{.path = path, .mode = mode})
-        };
+        QJsonObject grpcSettingsJson = streamSettingsJson["grpcSettings"].toObject();
+        grpcSettings = getGrpcSettingsFromJson(grpcSettingsJson);
     } else {
         throw UnsupportedProtocolException("Unsupported protocol: " + ssNetwork.toStdString());
     }
+
+    QSharedPointer<TlsSettings> tlsSettings;
+    QSharedPointer<RealitySettings> realitySettings;
+    if (ssSecurity == "tls") {
+        if (!streamSettingsJson.contains("tlsSettings")) {
+            throw JsonFormatException("tlsSettings undefined");
+        }
+        QJsonObject tlsSettingsJson = streamSettingsJson["tlsSettings"].toObject();
+        tlsSettings = getTlsSettingsFromJson(tlsSettingsJson);
+    } else if (ssSecurity == "reality") {
+        if (!streamSettingsJson.contains("realitySettings")) {
+            throw JsonFormatException("realitySettings undefined");
+        }
+        QJsonObject realitySettingsJson = streamSettingsJson["realitySettings"].toObject();
+        realitySettings = getRealitySettingsFromJson(realitySettingsJson);
+    }
+    return StreamSettings{
+        .network = ssNetwork, .security = ssSecurity, .tlsSettings = tlsSettings, .realitySettings = realitySettings,
+        .grpcSettings = grpcSettings, .xhttpSettings = xhttpSettings
+    };
+}
+
+QSharedPointer<XhttpSettings> ServerInfo::getXhttpSettingsFromJson(const QJsonObject &xhttpSettingsJson) {
+    if (!xhttpSettingsJson.contains("path")) {
+        throw JsonFormatException("xhttp: path undefined");
+    }
+    if (!xhttpSettingsJson.contains("mode")) {
+        throw JsonFormatException("xhttp: mode undefined");
+    }
+    QString path = xhttpSettingsJson["path"].toString();
+    QString mode = xhttpSettingsJson["mode"].toString();
+    return QSharedPointer<XhttpSettings>(new XhttpSettings{.path = path, .mode = mode});
+}
+
+QSharedPointer<GrpcSettings> ServerInfo::getGrpcSettingsFromJson(const QJsonObject &grpcSettingsJson) {
+    if (!grpcSettingsJson.contains("serviceName")) {
+        throw JsonFormatException("grpc: serviceName undefined");
+    }
+    return QSharedPointer<GrpcSettings>(new GrpcSettings{.serviceName = grpcSettingsJson["serviceName"].toString()});
+}
+
+QSharedPointer<TlsSettings> ServerInfo::getTlsSettingsFromJson(const QJsonObject &tlsSettingsJson) {
+    if (!tlsSettingsJson.contains("fingerprint")) {
+        throw JsonFormatException("tls: fingerprint undefined");
+    }
+    QString fingerprint = tlsSettingsJson["fingerprint"].toString();
+    return QSharedPointer<TlsSettings>(new TlsSettings(fingerprint));
+}
+
+QSharedPointer<RealitySettings> ServerInfo::getRealitySettingsFromJson(const QJsonObject &realitySettingsJson) {
+    if (!realitySettingsJson.contains("serverName")) {
+        throw JsonFormatException("reality: serverName undefined");
+    }
+    QString serverName = realitySettingsJson["serverName"].toString();
+    if (!realitySettingsJson.contains("fingerprint")) {
+        throw JsonFormatException("reality: fingerprint undefined");
+    }
+    QString fingerprint = realitySettingsJson["fingerprint"].toString();
+
+    bool show = false;
+
+    if (!realitySettingsJson.contains("publicKey")) {
+        throw JsonFormatException("reality: publicKey undefined");
+    }
+    QString publicKey = realitySettingsJson["publicKey"].toString();
+
+    if (!realitySettingsJson.contains("shortId")) {
+        throw JsonFormatException("reality: shortId undefined");
+    }
+    QString shortId = realitySettingsJson["shortId"].toString();
+
+    if (!realitySettingsJson.contains("spiderX")) {
+        throw JsonFormatException("reality: spiderX undefined");
+    }
+    QString spiderX = realitySettingsJson["spiderX"].toString();
+
+    QString mldsa65Verify = "";
+
+    return QSharedPointer<RealitySettings>(new RealitySettings{
+        .serverName = serverName,
+        .fingerprint = fingerprint,
+        .publicKey = publicKey, .shortId = shortId, .spiderX = spiderX, .mldsa65Verify = mldsa65Verify
+    });
 }
 
 QJsonObject ServerInfo::toJson(bool withMetaData) const {
@@ -167,13 +339,13 @@ QJsonObject ServerInfo::toJson(bool withMetaData) const {
     serverJSON["protocol"] = "vless";
     QJsonArray vnextJsonArray;
     QJsonObject vnextItemJson;
-    vnextItemJson["address"] = ip;
-    vnextItemJson["port"] = port;
+    vnextItemJson["address"] = settings.vnext->at(0).address;
+    vnextItemJson["port"] = settings.vnext->at(0).port;
     QJsonArray users;
     QJsonObject userJson;
-    userJson["id"] = userInfo.id;
-    userJson["encryption"] = userInfo.encryption;
-    userJson["security"] = userInfo.security;
+    userJson["id"] = settings.vnext->at(0).users[0].id;
+    userJson["encryption"] = settings.vnext->at(0).users[0].encryption;
+    userJson["security"] = settings.vnext->at(0).users[0].security;
     users.append(userJson);
     vnextItemJson["users"] = users;
     vnextJsonArray.append(vnextItemJson);
@@ -190,23 +362,63 @@ QJsonObject ServerInfo::toJson(bool withMetaData) const {
 
 QJsonObject ServerInfo::getStreamSettingsJson() const {
     QJsonObject streamSettingsJson;
+    streamSettingsJson["network"] = streamSettings.network;
+    streamSettingsJson["security"] = streamSettings.security;
     if (streamSettings.network == "xhttp") {
-        if (streamSettings.xhttpSettings == nullptr) {
-            throw JsonFormatException("xhttpSettings undefined for protocol: xhttp");
-        }
-        streamSettingsJson["network"] = streamSettings.network;
-        streamSettingsJson["security"] = streamSettings.security;
-        QJsonObject tlsSettingsJson;
-        tlsSettingsJson["fingerprint"] = streamSettings.tlsSettings.fingerprint;
-        streamSettingsJson["tlsSettings"] = tlsSettingsJson;
-        QJsonObject xhttpSettingsJson;
-        xhttpSettingsJson["path"] = streamSettings.xhttpSettings->path;
-        xhttpSettingsJson["mode"] = streamSettings.xhttpSettings->mode;
-        streamSettingsJson["xhttpSettings"] = xhttpSettingsJson;
-        return streamSettingsJson;
+        streamSettingsJson["xhttpSettings"] = getXhttpSettingsJson();
+    }else if (streamSettings.network == "grpc") {
+        streamSettingsJson["grpcSettings"] = getGrpcSettingsJson();
     } else {
         throw UnsupportedProtocolException("Unsupported protocol: " + streamSettings.network.toStdString());
     }
+    if (streamSettings.tlsSettings != nullptr) {
+        streamSettingsJson["tlsSettings"] = getTlsSettingsJson();
+    }
+    if (streamSettings.realitySettings != nullptr) {
+        streamSettingsJson["realitySettings"] = getRealitySettingsJson();
+    }
+    return streamSettingsJson;
+}
+
+QJsonObject ServerInfo::getTlsSettingsJson() const {
+    QJsonObject tlsSettingsJson;
+    tlsSettingsJson["fingerprint"] = streamSettings.tlsSettings->fingerprint;
+    return tlsSettingsJson;
+}
+
+QJsonObject ServerInfo::getRealitySettingsJson() const {
+    QJsonObject realitySettingsJson;
+    realitySettingsJson["serverName"] = streamSettings.realitySettings->serverName;
+    realitySettingsJson["fingerprint"] = streamSettings.realitySettings->fingerprint;
+    realitySettingsJson["show"] = false;
+    realitySettingsJson["publicKey"] = streamSettings.realitySettings->publicKey;
+    realitySettingsJson["shortId"] = streamSettings.realitySettings->shortId;
+    realitySettingsJson["spiderX"] = streamSettings.realitySettings->spiderX;
+    return realitySettingsJson;
+}
+
+QJsonObject ServerInfo::getXhttpSettingsJson() const {
+    if (streamSettings.xhttpSettings == nullptr) {
+        throw JsonFormatException("xhttpSettings undefined for protocol: xhttp");
+    }
+    QJsonObject xhttpSettingsJson;
+    xhttpSettingsJson["path"] = streamSettings.xhttpSettings->path;
+    xhttpSettingsJson["mode"] = streamSettings.xhttpSettings->mode;
+    return xhttpSettingsJson;
+}
+
+QJsonObject ServerInfo::getGrpcSettingsJson() const {
+    if (streamSettings.grpcSettings == nullptr) {
+        throw JsonFormatException("grpcSettings undefined for protocol: grpc");
+    }
+    QJsonObject grpcSettingsJson;
+    grpcSettingsJson["serviceName"] = streamSettings.grpcSettings->serviceName;
+    grpcSettingsJson["multiMode"] = streamSettings.grpcSettings->multiMode;
+    grpcSettingsJson["idle_timeout"] = streamSettings.grpcSettings->idleTimeout;
+    grpcSettingsJson["health_check_timeout"] = streamSettings.grpcSettings->healthCheckTimeout;
+    grpcSettingsJson["permit_without_stream"] = streamSettings.grpcSettings->permitWithoutStream;
+    grpcSettingsJson["initial_windows_size"] = streamSettings.grpcSettings->initialWindowsSize;
+    return grpcSettingsJson;
 }
 
 QString ServerInfo::getId() const {
@@ -214,19 +426,23 @@ QString ServerInfo::getId() const {
 }
 
 QString ServerInfo::getIp() const {
-    return ip;
+    return settings.vnext->at(0).address;
 }
 
 void ServerInfo::setIp(const QString &ip) {
-    this->ip = ip;
+    auto vnext = settings.vnext->at(0);
+    vnext.address = ip;
+    settings.vnext->replace(0, vnext);
 }
 
 int ServerInfo::getPort() const {
-    return port;
+    return settings.vnext->at(0).port;
 }
 
 void ServerInfo::setPort(int port) {
-    this->port = port;
+    auto vnext = settings.vnext->at(0);
+    vnext.port = port;
+    settings.vnext->replace(0, vnext);
 }
 
 QString ServerInfo::getName() const {
@@ -238,11 +454,14 @@ void ServerInfo::setName(const QString &name) {
 }
 
 UserInfo ServerInfo::getUser() const {
+    auto vnext = settings.vnext->at(0);
+    auto userInfo = vnext.users[0];
     return userInfo;
 }
 
 void ServerInfo::setUser(const UserInfo &userInfo) {
-    this->userInfo = userInfo;
+    auto vnext = settings.vnext->at(0);
+    vnext.users[0] = userInfo;
 }
 
 StreamSettings ServerInfo::getStreamSettings() const {

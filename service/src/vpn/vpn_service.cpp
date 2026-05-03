@@ -12,7 +12,7 @@ VPNService::VPNService(QObject *parent) : AbstractVPN(parent, "VPNService") {
     singBoxRunner =
             QSharedPointer<ProcessRunner>(
                 new ProcessRunner(singBoxBinPath
-                                  , QStringList() << "run" << "-c" << singBoxConfigPath));
+                                  , QStringList() << "run" << "-c" << singBoxConfigPath, true));
     xrayRunner = QSharedPointer<ProcessRunner>(
         new ProcessRunner(xrayBinPath, QStringList() << "run" << "-c" << xrayConfigPath));
     connect(xrayRunner.data(), &ProcessRunner::started, this, &VPNService::xrayStarted);

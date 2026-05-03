@@ -8,6 +8,7 @@
 #include "logger/logger.h"
 #include <QQmlEngine>
 #include <QLocalSocket>
+
 ServersManager::ServersManager(QObject *parent) : QAbstractListModel(parent) {
     loadFromSettings();
 }
@@ -30,6 +31,8 @@ void ServersManager::loadFromSettings() {
                         currentServerIpChanged(server.getIp());
                         currentServerIdChanged(server.getId());
                         currentServerNameChanged(server.getName());
+                        currentServerNetworkChanged(server.getStreamSettings().network);
+                        currentServerSecurityChanged(server.getStreamSettings().security);
                     }
                     servers.append(server);
                 }
@@ -41,6 +44,8 @@ void ServersManager::loadFromSettings() {
         currentServerIpChanged(servers[0].getIp());
         currentServerIdChanged(servers[0].getId());
         currentServerNameChanged(servers[0].getName());
+        currentServerNetworkChanged(servers[0].getStreamSettings().network);
+        currentServerSecurityChanged(servers[0].getStreamSettings().security);
     }
     endResetModel();
 }
@@ -60,6 +65,8 @@ void ServersManager::setNewCurrentServer(QString serverId) {
         currentServerIpChanged(server.getIp());
         currentServerIdChanged(server.getId());
         currentServerNameChanged(server.getName());
+        currentServerNetworkChanged(server.getStreamSettings().network);
+        currentServerSecurityChanged(server.getStreamSettings().security);
     } catch (const WrongArgsException &e) {
         Logger.error("Can't set server with id: " + serverId.toStdString(), e);
     }
@@ -100,6 +107,16 @@ QString ServersManager::getCurrentServerName() {
     return server.getName();
 }
 
+QString ServersManager::getCurrentServerNetwork() {
+    auto server = getServerById(currentServerId);
+    return server.getStreamSettings().network;
+}
+
+QString ServersManager::getCurrentServerSecurity() {
+    auto server = getServerById(currentServerId);
+    return server.getStreamSettings().security;
+}
+
 int ServersManager::rowCount(const QModelIndex &parent) const {
     return servers.size();
 }
@@ -114,6 +131,10 @@ QVariant ServersManager::data(const QModelIndex &index, int role) const {
             return server.getIp();
         case NameRole:
             return server.getName();
+        case NetworkRole:
+            return server.getStreamSettings().network;
+        case SecurityRole:
+            return server.getStreamSettings().security;
         default:
             return QVariant();
     }
@@ -124,6 +145,8 @@ QHash<int, QByteArray> ServersManager::roleNames() const {
     roles[IdRole] = "id";
     roles[IpRole] = "ip";
     roles[NameRole] = "name";
+    roles[NetworkRole] = "network";
+    roles[SecurityRole] = "security";
     return roles;
 }
 
@@ -163,21 +186,89 @@ QVariantMap ServersManager::getServerAsMapById(const QString &id) {
     serverAsMap["ip"] = server.getIp();
     serverAsMap["port"] = server.getPort();
     serverAsMap["name"] = server.getName();
-    serverAsMap["xHttpPath"] = server.getStreamSettings().xhttpSettings->path;
+    serverAsMap["network"] = server.getStreamSettings().network;
+    serverAsMap["security"] = server.getStreamSettings().security;
+    if (serverAsMap["network"] == "xhttp") {
+        serverAsMap["xHttpPath"] = server.getStreamSettings().xhttpSettings->path;
+    } else if (serverAsMap["network"] == "xhttp") {
+        serverAsMap["grpcServiceName"] = server.getStreamSettings().grpcSettings->serviceName;
+    }
+    if (serverAsMap["security"] == "tls") {
+        serverAsMap["tlsFingerprint"] = server.getStreamSettings().tlsSettings->fingerprint;
+    } else if (serverAsMap["security"] == "reality") {
+        serverAsMap["realityServerName"] = server.getStreamSettings().realitySettings->serverName;
+        serverAsMap["realityFingerprint"] = server.getStreamSettings().realitySettings->fingerprint;
+        serverAsMap["realityPublicKey"] = server.getStreamSettings().realitySettings->publicKey;
+        serverAsMap["realityShortId"] = server.getStreamSettings().realitySettings->shortId;
+        serverAsMap["realitySpiderX"] = server.getStreamSettings().realitySettings->spiderX;
+    }
     return serverAsMap;
 }
 
 void ServersManager::updateServer(const QString &id, QVariantMap serverAsMap) {
     auto server = getServerById(id);
     server.setIp(serverAsMap["ip"].toString());
-    auto xHttpPath = serverAsMap["xHttpPath"].toString();
     server.setName(serverAsMap["name"].toString());
     server.setPort(serverAsMap["port"].toInt());
+    auto lastNetwork = server.getStreamSettings().network;
+    auto lastSecurity = server.getStreamSettings().security;
+    auto newNetwork = serverAsMap["network"].toString();
+    auto newSecurity = serverAsMap["security"].toString();
+    if (lastNetwork != newNetwork) {
+        if (lastNetwork == "xhttp") {
+            server.getStreamSettings().xhttpSettings = nullptr;
+        } else if (lastNetwork == "grpc") {
+            server.getStreamSettings().grpcSettings = nullptr;
+        }
+    }
+    if (lastSecurity != newSecurity) {
+        if (lastSecurity == "tls") {
+            server.getStreamSettings().tlsSettings = nullptr;
+        } else if (lastSecurity == "reality") {
+            server.getStreamSettings().realitySettings = nullptr;
+        }
+    }
     auto streamSettings = server.getStreamSettings();
-    if (streamSettings.xhttpSettings != nullptr) {
-        streamSettings.xhttpSettings->path = xHttpPath;
-    } else {
-        Logger.warn("Can't save xHTTP path. Unsupported transport protocol");
+    if (newNetwork == "xhttp") {
+        auto xHttpPath = serverAsMap["xHttpPath"].toString();
+        if (streamSettings.xhttpSettings != nullptr) {
+            streamSettings.xhttpSettings->path = xHttpPath;
+        } else {
+            streamSettings.xhttpSettings = QSharedPointer<XhttpSettings>(new XhttpSettings{.path = xHttpPath});
+        }
+    } else if (newNetwork == "grpc") {
+        if (streamSettings.grpcSettings != nullptr) {
+            streamSettings.grpcSettings->serviceName = serverAsMap["grpcServiceName"].toString();
+        } else {
+            streamSettings.grpcSettings = QSharedPointer<GrpcSettings>(new GrpcSettings{
+                .serviceName = serverAsMap["grpcServiceName"].toString()
+            });
+        }
+    }
+    if (newSecurity == "tls") {
+        if (streamSettings.tlsSettings != nullptr) {
+            streamSettings.tlsSettings->fingerprint = serverAsMap["tlsFingerprint"].toString();
+        } else {
+            streamSettings.tlsSettings = QSharedPointer<TlsSettings>(new TlsSettings{
+                .fingerprint = serverAsMap["tlsFingerprint"].toString()
+            });
+        }
+    } else if (newSecurity == "reality") {
+        if (streamSettings.realitySettings != nullptr) {
+            streamSettings.realitySettings->fingerprint = serverAsMap["realityFingerprint"].toString();
+            streamSettings.realitySettings->serverName = serverAsMap["realityServerName"].toString();
+            streamSettings.realitySettings->publicKey = serverAsMap["realityPublicKey"].toString();
+            streamSettings.realitySettings->shortId = serverAsMap["realityShortId"].toString();
+            streamSettings.realitySettings->spiderX = serverAsMap["realitySpiderX"].toString();
+        }else {
+            streamSettings.realitySettings = QSharedPointer<RealitySettings>(new RealitySettings{
+                .serverName = serverAsMap["realityServerName"].toString(),
+                .fingerprint = serverAsMap["realityFingerprint"].toString(),
+                .publicKey = serverAsMap["realityPublicKey"].toString(),
+                .shortId = serverAsMap["realityShortId"].toString(),
+                .spiderX = serverAsMap["realitySpiderX"].toString()
+            });
+        }
     }
     server.setStreamSettings(streamSettings);
     updateServer(server);

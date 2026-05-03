@@ -19,8 +19,6 @@ qt_add_executable(KVNForceService
         src/message_server/message_server.cpp
         src/message_server/message_server.h
         ${RESOURCES}
-        src/servers/server_info.cpp
-        src/servers/server_info.h
         src/vpn/vpn_service.cpp
         src/vpn/vpn_service.h
         src/vpn/vpn_service_manager.cpp

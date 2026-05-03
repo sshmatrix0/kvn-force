@@ -17,22 +17,51 @@ struct XhttpSettings {
     QString mode = "auto";
 };
 
+struct RealitySettings {
+    QString serverName;
+    QString fingerprint = "chrome";
+    QString publicKey;
+    QString shortId;
+    QString spiderX = "/";
+    QString mldsa65Verify = "";
+};
+
+struct GrpcSettings {
+    QString serviceName;
+    bool multiMode = false;
+    int idleTimeout = 60;
+    int healthCheckTimeout = 20;
+    bool permitWithoutStream = false;
+    int initialWindowsSize = 0;
+};
+
 struct TlsSettings {
     QString fingerprint;
 };
 
+struct VNext {
+    QString address;
+    int port;
+    QList<UserInfo> users;
+};
+
+struct ServerSettings {
+    QSharedPointer<QList<VNext> > vnext;
+};
+
 struct StreamSettings {
-    QString network = "xhttp";
-    QString security = "tls";
-    TlsSettings tlsSettings = {.fingerprint = "chrome"};
+    QString network;
+    QString security;
+    QSharedPointer<TlsSettings> tlsSettings;
+    QSharedPointer<RealitySettings> realitySettings;
+    QSharedPointer<GrpcSettings> grpcSettings;
     QSharedPointer<XhttpSettings> xhttpSettings;
 };
 
 class ServerInfo {
 public:
-    ServerInfo(const QString id, const QString ip, int port, QString name, UserInfo userInfo,
-               StreamSettings streamSettings, bool active = false) : id(id), ip(ip), name(name), port(port),
-                                                                     userInfo(std::move(userInfo)),
+    ServerInfo(const QString id, QString name, ServerSettings settings,
+               StreamSettings streamSettings, bool active = false) : id(id), name(name), settings(settings),
                                                                      streamSettings(std::move(streamSettings)),
                                                                      active(active) {
     }
@@ -45,14 +74,44 @@ public:
 
     static ServerInfo fromVlessUrl(const QString &vlessUrl, const QString &defaultServerNumber);
 
+    static ServerSettings getSettingsFromVlessUrl(const QUrl &url);
+
+    static StreamSettings getStreamSettingsFromVlessUrl(const QUrl &url);
+
+    static QSharedPointer<XhttpSettings> getXhttpSettingsFromVlessUrl(const QUrlQuery &query);
+
+    static QSharedPointer<GrpcSettings> getGrpcSettingsFromVlessUrl(const QUrlQuery &query);
+
+    static QSharedPointer<TlsSettings> getTlsSettingsFromVlessUrl(const QUrlQuery &query);
+
+    static QSharedPointer<RealitySettings> getRealitySettingsFromVlessUrl(const QUrlQuery &query);
+
+    static QString getStringParameterFromUrlQuery(const QUrlQuery &query, const QString &parameterName);
+
     QJsonObject toJson(bool withMetaData = true) const;
 
     QJsonObject getStreamSettingsJson() const;
+
+    QJsonObject getXhttpSettingsJson() const;
+
+    QJsonObject getGrpcSettingsJson() const;
+
+    QJsonObject getTlsSettingsJson() const;
+
+    QJsonObject getRealitySettingsJson() const;
 
 protected:
     static UserInfo getUserFromJson(const QJsonObject &vNextJson);
 
     static StreamSettings getStreamSettingsFromJson(const QJsonObject &streamSettingsJson);
+
+    static QSharedPointer<XhttpSettings> getXhttpSettingsFromJson(const QJsonObject &xhttpSettingsJson);
+
+    static QSharedPointer<GrpcSettings> getGrpcSettingsFromJson(const QJsonObject &grpcSettingsJson);
+
+    static QSharedPointer<TlsSettings> getTlsSettingsFromJson(const QJsonObject &tlsSettingsJson);
+
+    static QSharedPointer<RealitySettings> getRealitySettingsFromJson(const QJsonObject &realitySettingsJson);
 
 public:
     QString getId() const;
@@ -85,10 +144,8 @@ public:
 
 private:
     QString id;
-    QString ip;
-    int port;
     QString name;
-    UserInfo userInfo;
+    ServerSettings settings;
     StreamSettings streamSettings;
     bool active;
 };
