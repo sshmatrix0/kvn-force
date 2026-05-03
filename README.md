@@ -1,4 +1,4 @@
-# KVNForce - simple opensource VPN client.
+# KVNForce - simple opensource VPN client (GUI like AmneziaVPN).
 
 ## Supports XRay: 
 - xhttp + tls
