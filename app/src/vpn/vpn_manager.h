@@ -16,18 +16,18 @@ public:
 
     VPNManager(QObject *parent = nullptr) : QObject(parent) {
         vpn = VPNFactory::createVPN();
-        connect(vpn.data(), &AbstractVPN::connecting, this, [=] {
+        connect(vpn.data(), &AbstractVPN::connecting, this, [this] {
             emit connectionStateChanged(getConnectionState());
         });
-        connect(vpn.data(), &AbstractVPN::connected, this, [=] {
+        connect(vpn.data(), &AbstractVPN::connected, this, [this] {
             emit connected();
             emit connectionStateChanged(getConnectionState());
         });
-        connect(vpn.data(), &AbstractVPN::disconnected, this, [=] {
+        connect(vpn.data(), &AbstractVPN::disconnected, this, [this] {
             emit disconnected();
             emit connectionStateChanged(getConnectionState());
         });
-        connect(vpn.data(), &AbstractVPN::failed, this, [=] {
+        connect(vpn.data(), &AbstractVPN::failed, this, [this] {
             emit failed();
             emit connectionStateChanged(getConnectionState());
         });

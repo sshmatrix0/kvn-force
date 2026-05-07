@@ -23,24 +23,24 @@ ProcessRunner::ProcessRunner(QString program, QStringList args, bool su, QObject
         });
     }
 #endif
-    connect(process, &QProcess::started, [=]() {
+    connect(process, &QProcess::started, [this]() {
         _started = true;
         emit started();
     });
 
-    connect(process, &QProcess::errorOccurred, [=](QProcess::ProcessError error) {
+    connect(process, &QProcess::errorOccurred, [this,args, program](QProcess::ProcessError error) {
         _failed = true;
         emit failed(ProcessFailedException(
             "Process: " + processErrorToString(error).toStdString() + program.toStdString() + " " + (args.join(" ").
                 toStdString())));
     });
-    connect(process, &QProcess::readyReadStandardOutput, [=]() {
+    connect(process, &QProcess::readyReadStandardOutput, [this]() {
         QByteArray output = process->readAllStandardOutput();
         Logger.trace(QString(output).toStdString());
         emit outLog(output);
     });
 
-    connect(process, &QProcess::readyReadStandardError, [=]() {
+    connect(process, &QProcess::readyReadStandardError, [this]() {
         QByteArray error = process->readAllStandardError();
         Logger.trace(QString(error).toStdString());
         emit errorLog(error);
@@ -79,7 +79,7 @@ void ProcessRunner::stop() {
         if (su) {
             QProcess::execute("sudo", QStringList() << "killall" << program);
         } else {
-            QProcess::execute("killall", QStringList()  << program);
+            QProcess::execute("killall", QStringList() << program);
         }
     } else if (QSysInfo::kernelType() == "winnt") {
         if (program.contains("sing-box")) {

@@ -6,6 +6,7 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
+    Logger.setLogLevel(LogLevel::TRACE);
     VPNServiceManager vpnServiceManager;
     // Set up code that uses the Qt event loop here.
     // Call QCoreApplication::quit() or QCoreApplication::exit() to quit the application.
