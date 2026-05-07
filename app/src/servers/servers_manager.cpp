@@ -195,6 +195,7 @@ QVariantMap ServersManager::getServerAsMapById(const QString &id) {
     }
     if (serverAsMap["security"] == "tls") {
         serverAsMap["tlsFingerprint"] = server.getStreamSettings().tlsSettings->fingerprint;
+        serverAsMap["tlsAlpn"] = server.getStreamSettings().tlsSettings->alpn.join(",");
     } else if (serverAsMap["security"] == "reality") {
         serverAsMap["realityServerName"] = server.getStreamSettings().realitySettings->serverName;
         serverAsMap["realityFingerprint"] = server.getStreamSettings().realitySettings->fingerprint;
@@ -248,9 +249,11 @@ void ServersManager::updateServer(const QString &id, QVariantMap serverAsMap) {
     if (newSecurity == "tls") {
         if (streamSettings.tlsSettings != nullptr) {
             streamSettings.tlsSettings->fingerprint = serverAsMap["tlsFingerprint"].toString();
+            streamSettings.tlsSettings->alpn = serverAsMap["tlsAlpn"].toStringList();
         } else {
             streamSettings.tlsSettings = QSharedPointer<TlsSettings>(new TlsSettings{
-                .fingerprint = serverAsMap["tlsFingerprint"].toString()
+                .fingerprint = serverAsMap["tlsFingerprint"].toString(),
+                .alpn = serverAsMap["tlsAlpn"].toStringList()
             });
         }
     } else if (newSecurity == "reality") {
@@ -260,7 +263,7 @@ void ServersManager::updateServer(const QString &id, QVariantMap serverAsMap) {
             streamSettings.realitySettings->publicKey = serverAsMap["realityPublicKey"].toString();
             streamSettings.realitySettings->shortId = serverAsMap["realityShortId"].toString();
             streamSettings.realitySettings->spiderX = serverAsMap["realitySpiderX"].toString();
-        }else {
+        } else {
             streamSettings.realitySettings = QSharedPointer<RealitySettings>(new RealitySettings{
                 .serverName = serverAsMap["realityServerName"].toString(),
                 .fingerprint = serverAsMap["realityFingerprint"].toString(),

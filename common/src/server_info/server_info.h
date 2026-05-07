@@ -37,6 +37,7 @@ struct GrpcSettings {
 
 struct TlsSettings {
     QString fingerprint;
+    QList<QString> alpn;
 };
 
 struct VNext {

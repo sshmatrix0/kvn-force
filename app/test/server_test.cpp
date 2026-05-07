@@ -25,7 +25,7 @@ void ServerTest::fromJsonXhttpTls1() {
     Logger.setLogLevel(LogLevel::TRACE);
 
     QString jsonString =
-            R"({"id":"1", "tag": "proxy", "protocol": "vless", "settings": { "vnext": [ { "address": "213.119.43.300", "port": 443, "users": [ { "id": "06fb17bf-32c6-4d2d-92a2-e052dcd26780", "encryption": "none" } ] } ] }, "streamSettings": { "network": "xhttp", "security": "tls", "tlsSettings": { "fingerprint": "chrome" }, "xhttpSettings": { "path": "/repos/octocat/Spoon-Knife/issues", "mode": "auto" } }, "sockopt": { "mark": 255 } })";
+            R"({"id":"1", "tag": "proxy", "protocol": "vless", "settings": { "vnext": [ { "address": "213.119.43.300", "port": 443, "users": [ { "id": "06fb17bf-32c6-4d2d-92a2-e052dcd26780", "encryption": "none" } ] } ] }, "streamSettings": { "network": "xhttp", "security": "tls", "tlsSettings": { "fingerprint": "chrome","alpn":["h2", "http/1.1"] }, "xhttpSettings": { "path": "/repos/octocat/Spoon-Knife/issues", "mode": "auto" } }, "sockopt": { "mark": 255 } })";
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(jsonString.toUtf8(), &parseError);
 
@@ -41,6 +41,9 @@ void ServerTest::fromJsonXhttpTls1() {
         QVERIFY(server.getStreamSettings().network=="xhttp");
         QVERIFY(server.getStreamSettings().security=="tls");
         QVERIFY(server.getStreamSettings().tlsSettings->fingerprint=="chrome");
+        QVERIFY(server.getStreamSettings().tlsSettings->alpn.size() == 2);
+        QVERIFY(server.getStreamSettings().tlsSettings->alpn[0] == "h2");
+        QVERIFY(server.getStreamSettings().tlsSettings->alpn[1] == "http/1.1");
         QVERIFY(server.getStreamSettings().xhttpSettings->path=="/repos/octocat/Spoon-Knife/issues");
         QVERIFY(server.getStreamSettings().xhttpSettings->mode=="auto");
     } catch (std::exception &ex) {

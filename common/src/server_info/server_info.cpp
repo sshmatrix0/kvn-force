@@ -161,10 +161,15 @@ QSharedPointer<GrpcSettings> ServerInfo::getGrpcSettingsFromVlessUrl(const QUrlQ
 
 QSharedPointer<TlsSettings> ServerInfo::getTlsSettingsFromVlessUrl(const QUrlQuery &query) {
     QString fingerprint = getStringParameterFromUrlQuery(query, "fp");
+    QString alpnString = getStringParameterFromUrlQuery(query, "alpn");
+    QList<QString> alpn;
     if (fingerprint.isEmpty()) {
         fingerprint = "chrome";
     }
-    return QSharedPointer<TlsSettings>(new TlsSettings{.fingerprint = fingerprint});
+    if (!alpnString.isEmpty()) {
+        alpn = alpnString.split(",");
+    }
+    return QSharedPointer<TlsSettings>(new TlsSettings{.fingerprint = fingerprint, .alpn = alpn});
 }
 
 QSharedPointer<RealitySettings> ServerInfo::getRealitySettingsFromVlessUrl(const QUrlQuery &query) {
@@ -289,7 +294,14 @@ QSharedPointer<TlsSettings> ServerInfo::getTlsSettingsFromJson(const QJsonObject
         throw JsonFormatException("tls: fingerprint undefined");
     }
     QString fingerprint = tlsSettingsJson["fingerprint"].toString();
-    return QSharedPointer<TlsSettings>(new TlsSettings(fingerprint));
+    QList<QString> alpn;
+    if (tlsSettingsJson.contains("alpn")) {
+        auto alpnJsonArray = tlsSettingsJson["alpn"].toArray();
+        for (const QJsonValue &v: alpnJsonArray) {
+            alpn.append(v.toString());
+        }
+    }
+    return QSharedPointer<TlsSettings>(new TlsSettings{.fingerprint = fingerprint, .alpn = alpn});
 }
 
 QSharedPointer<RealitySettings> ServerInfo::getRealitySettingsFromJson(const QJsonObject &realitySettingsJson) {
@@ -366,7 +378,7 @@ QJsonObject ServerInfo::getStreamSettingsJson() const {
     streamSettingsJson["security"] = streamSettings.security;
     if (streamSettings.network == "xhttp") {
         streamSettingsJson["xhttpSettings"] = getXhttpSettingsJson();
-    }else if (streamSettings.network == "grpc") {
+    } else if (streamSettings.network == "grpc") {
         streamSettingsJson["grpcSettings"] = getGrpcSettingsJson();
     } else {
         throw UnsupportedProtocolException("Unsupported protocol: " + streamSettings.network.toStdString());
@@ -383,6 +395,7 @@ QJsonObject ServerInfo::getStreamSettingsJson() const {
 QJsonObject ServerInfo::getTlsSettingsJson() const {
     QJsonObject tlsSettingsJson;
     tlsSettingsJson["fingerprint"] = streamSettings.tlsSettings->fingerprint;
+    tlsSettingsJson["alpn"] = QJsonArray::fromStringList(streamSettings.tlsSettings->alpn);
     return tlsSettingsJson;
 }
 

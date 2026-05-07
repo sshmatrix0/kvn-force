@@ -65,14 +65,14 @@ Rectangle {
                     visible: networkTypeId.currentValue === "xhttp"
                     id: xHttpPath
                     label: "xHttpPath"
-                    text: serverAsMap.xHttpPath
+                    text: serverAsMap.xHttpPath ? serverAsMap.xHttpPath : ""
                     Layout.alignment: Qt.AlignCenter | Qt.AlignTop
                 }
                 ATextField {
                     visible: networkTypeId.currentValue === "grpc"
                     id: grpcServiceName
                     label: "Grpc Service Name"
-                    text: serverAsMap.grpcServiceName
+                    text: serverAsMap.grpcServiceName ? serverAsMap.grpcServiceName : ""
                     Layout.alignment: Qt.AlignCenter | Qt.AlignTop
                 }
                 ASelectField {
@@ -87,42 +87,51 @@ Rectangle {
                     visible: securityTypeId.currentValue === "tls"
                     id: tlsFingerprint
                     label: "Tls Fingerprint"
-                    text: serverAsMap.tlsFingerprint
+                    text: serverAsMap.tlsFingerprint ? serverAsMap.tlsFingerprint : ""
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignTop
+                }
+                ASelectField {
+                    visible: securityTypeId.currentValue === "tls"
+                    id: tlsAlpn
+                    Layout.topMargin: 20
+                    label: "Alpn"
+                    model: ["", "h3", "h2", "http/1.1", "h3,h2,http/1.1", "h3,h2", "h2,http/1.1"]
+                    currentIndex: tlsAlpn.findIndex(serverAsMap.tlsAlpn)
                     Layout.alignment: Qt.AlignCenter | Qt.AlignTop
                 }
                 ATextField {
                     visible: securityTypeId.currentValue === "reality"
                     id: realityServerName
                     label: "Reality Server Name"
-                    text: serverAsMap.realityServerName
+                    text: serverAsMap.realityServerName ? serverAsMap.realityServerName : ""
                     Layout.alignment: Qt.AlignCenter | Qt.AlignTop
                 }
                 ATextField {
                     visible: securityTypeId.currentValue === "reality"
                     id: realityFingerprint
                     label: "Reality FingerPrint"
-                    text: serverAsMap.realityFingerprint
+                    text: serverAsMap.realityFingerprint ? serverAsMap.realityFingerprint : ""
                     Layout.alignment: Qt.AlignCenter | Qt.AlignTop
                 }
                 ATextField {
                     visible: securityTypeId.currentValue === "reality"
                     id: realityPublicKey
                     label: "Reality Public Key"
-                    text: serverAsMap.realityPublicKey
+                    text: serverAsMap.realityPublicKey ? serverAsMap.realityPublicKey : ""
                     Layout.alignment: Qt.AlignCenter | Qt.AlignTop
                 }
                 ATextField {
                     visible: securityTypeId.currentValue === "reality"
                     id: realityShortId
                     label: "Reality Short Id"
-                    text: serverAsMap.realityShortId
+                    text: serverAsMap.realityShortId ? serverAsMap.realityShortId : ""
                     Layout.alignment: Qt.AlignCenter | Qt.AlignTop
                 }
                 ATextField {
                     visible: securityTypeId.currentValue === "reality"
                     id: realitySpiderX
                     label: "Reality SpiderX"
-                    text: serverAsMap.realitySpiderX
+                    text: serverAsMap.realitySpiderX ? serverAsMap.realitySpiderX : ""
                     Layout.alignment: Qt.AlignCenter | Qt.AlignTop
                 }
             }
@@ -147,6 +156,7 @@ Rectangle {
                         xHttpPath: xHttpPath.text,
                         grpcServiceName: grpcServiceName.text,
                         tlsFingerprint: tlsFingerprint.text,
+                        tlsAlpn: tlsAlpn.currentValue.split(","),
                         realityServerName: realityServerName.text,
                         realityFingerprint: realityFingerprint.text,
                         realityPublicKey: realityPublicKey.text,

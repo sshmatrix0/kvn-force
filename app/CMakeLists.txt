@@ -15,13 +15,10 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Quick Network Test)
 find_package(cpptrace REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
-# 1. Ищем Git на системе
 find_package(Git QUIET)
 
-# 2. Устанавливаем значение по умолчанию, если Git не найден
 set(GIT_HASH "unknown")
 
-# 3. Если Git найден, выполняем команду для получения хеша
 if(GIT_FOUND)
     execute_process(
             COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
