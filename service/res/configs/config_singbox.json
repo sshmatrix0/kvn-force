@@ -41,6 +41,12 @@
       "tag": "block"
     }
   ],
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "path": "cache.db"
+    }
+  },
   "route": {
     "auto_detect_interface": true,
     "default_domain_resolver": {
