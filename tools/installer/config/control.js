@@ -14,6 +14,8 @@ function Controller() {
 
 
 Controller.prototype.onUninstallationStarted = function () {
+    installer.gainAdminRights();
+    installer.performOperation("Delete", [installer.value("TargetDir") + "/service/cache.db"]);
     if (systemInfo.productType === "windows") {
         onUninstallationStartedWindows();
     } else {
@@ -22,7 +24,6 @@ Controller.prototype.onUninstallationStarted = function () {
 }
 
 function onUninstallationStartedWindows() {
-    installer.gainAdminRights();
     installer.performOperation("Execute", ["taskkill", "/im", "KVNForce.exe"]);
     installer.performOperation("Execute", [installer.value("TargetDir") + "\\service\\KVNForceService.exe", "stop"]);
     installer.performOperation("Execute", [installer.value("TargetDir") + "\\service\\KVNForceService.exe", "uninstall"]);
@@ -31,7 +32,6 @@ function onUninstallationStartedWindows() {
     installer.execute("reg", ["delete", registryPath, "/f"]);
 }
 function onUninstallationStartedLinux() {
-    installer.gainAdminRights();
     installer.performOperation("Execute", ["systemctl", "stop", "KVNForce"]);
     installer.performOperation("Execute", ["systemctl", "disable", "KVNForce"]);
     installer.performOperation("Execute", ["killall", installer.value("TargetDir") + "/app/KVNForce"]);
