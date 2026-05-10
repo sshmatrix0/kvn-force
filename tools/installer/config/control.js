@@ -14,8 +14,6 @@ function Controller() {
 
 
 Controller.prototype.onUninstallationStarted = function () {
-    installer.gainAdminRights();
-    installer.performOperation("Delete", [installer.value("TargetDir") + "/service/cache.db"]);
     if (systemInfo.productType === "windows") {
         onUninstallationStartedWindows();
     } else {
@@ -24,15 +22,19 @@ Controller.prototype.onUninstallationStarted = function () {
 }
 
 function onUninstallationStartedWindows() {
+    installer.gainAdminRights();
     installer.performOperation("Execute", ["taskkill", "/im", "KVNForce.exe"]);
     installer.performOperation("Execute", [installer.value("TargetDir") + "\\service\\KVNForceService.exe", "stop"]);
     installer.performOperation("Execute", [installer.value("TargetDir") + "\\service\\KVNForceService.exe", "uninstall"]);
+    installer.performOperation("Delete", [installer.value("TargetDir") + "\\service\\cache.db"]);
 
     var registryPath = "HKEY_CURRENT_USER\\Software\\org.sshmatrix\\KVNForce";
     installer.execute("reg", ["delete", registryPath, "/f"]);
 }
 function onUninstallationStartedLinux() {
+    installer.gainAdminRights();
     installer.performOperation("Execute", ["systemctl", "stop", "KVNForce"]);
     installer.performOperation("Execute", ["systemctl", "disable", "KVNForce"]);
     installer.performOperation("Execute", ["killall", installer.value("TargetDir") + "/app/KVNForce"]);
+    installer.performOperation("Delete", [installer.value("TargetDir") + "/service/cache.db"]);
 }
