@@ -1,8 +1,8 @@
 # KVNForce - simple opensource VPN client (GUI like AmneziaVPN).
 
 ## Supports XRay: 
-- xhttp + tls
-- grpc + reality
+- xhttp + reality | tls
+- grpc + reality | tls
 ## Platforms:
 - Windows amd64
 - Linux amd64
